@@ -1,4 +1,4 @@
-# vrt-runner
+# [@magiclab/vrt-runner](https://www.npmjs.com/package/@magiclab/vrt-runner)
 
 VRT runner and result generator for images
 

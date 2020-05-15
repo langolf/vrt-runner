@@ -1,6 +1,6 @@
 {
   "name": "@magiclab/vrt-runner",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "VRT runner and result generator for images",
   "main": "build/index.js",
   "repository": "https://github.com/badoo/vrt-runner",
