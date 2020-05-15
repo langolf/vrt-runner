@@ -7,3 +7,4 @@ build/tsconfig.tsbuildinfo
 .eslintrc.js
 .prettierrc
 tsconfig.json
+example.png
