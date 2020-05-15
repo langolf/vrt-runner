@@ -2,7 +2,7 @@
 
 VRT runner and result generator for images
 
-![VRT Example](./example.png "VRT Example")
+![VRT Example](https://raw.githubusercontent.com/badoo/vrt-runner/master/example.png "VRT Example")
 
 ## CLI
 
