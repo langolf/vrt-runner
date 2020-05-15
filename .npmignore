@@ -1,3 +1,9 @@
 src/
 test/
 tmp/
+.vscode/
+build/tsconfig.tsbuildinfo
+.eslintignore
+.eslintrc.js
+.prettierrc
+tsconfig.json
