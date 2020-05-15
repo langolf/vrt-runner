@@ -2,6 +2,10 @@
 
 VRT runner and result generator for images
 
+![VRT Example](./example.png "VRT Example")
+
+## CLI
+
 `npx @magiclab/vrt-runner --cwd path_to_diff_images --output result_output`
 
 It expects the files to have a simple folder syntax
@@ -16,7 +20,9 @@ path_to_diff_images
     └── 2.png
 ```
 
-You can also use it as a module
+## Node
+
+You can also use it as a node module
 
 ```js
 import runVrt from '@magiclab/vrt-runner';
