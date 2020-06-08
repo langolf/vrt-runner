@@ -95,8 +95,6 @@ export type DiffResult = {
 async function diffDirs({ dirs, teamcity }: { dirs: DirsType; teamcity: boolean }) {
     const pairs = filePairs(dirs);
 
-    console.log(dirs, pairs);
-
     const result: DiffResult = {
         failed: [],
         passed: [],

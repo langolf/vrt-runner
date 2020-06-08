@@ -4,7 +4,7 @@ import generateReport from './report';
 import fs from 'fs-extra';
 import mkdirp from 'mkdirp';
 
-export default function runVrt({
+export default async function runVrt({
     teamcity,
     output,
     cwd,
@@ -32,28 +32,26 @@ export default function runVrt({
     fs.copySync(path.resolve(cwd, 'test'), dirs.test);
 
     // Collect images from baseline and testing paths
-    (async () => {
-        try {
-            // Compare
-            console.info(`Comparing images...`);
-            let cmpTime = Date.now();
-            const result = await diffDirs({ dirs, teamcity });
-            cmpTime = Date.now() - cmpTime;
+    try {
+        // Compare
+        console.info(`Comparing images...`);
+        let cmpTime = Date.now();
+        const result = await diffDirs({ dirs, teamcity });
+        cmpTime = Date.now() - cmpTime;
 
-            console.info(
-                `==================
+        console.info(
+            `==================
 Tests failed: ${result.failed.length + result.missing.length}
 Tests passed: ${result.passed.length + result.new.length}
 Screenshots time: ${/*scrTime / 1000*/ ''} s.
 Diff time: ${cmpTime / 1000} s.`
-            );
+        );
 
-            generateReport(reportFile, result);
-            console.info('Report generated to', reportFile);
-            process.exit(0);
-        } catch (error) {
-            console.error(`Comparing images error: \n${error.stack || error}`);
-            process.exit(1);
-        }
-    })();
+        generateReport(reportFile, result);
+        console.info('Report generated to', reportFile);
+        process.exit(0);
+    } catch (error) {
+        console.error(`Comparing images error: \n${error.stack || error}`);
+        process.exit(1);
+    }
 }
