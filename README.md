@@ -33,3 +33,11 @@ runVrt({
     teamcity, // boolean flag to know if we should log teamcity friendly output
 });
 ```
+
+## Assets
+
+CSS files for the report page are generated. If you need to make changes to it, update `src/report-assets/css/vrt.scss` and run the following command:
+
+```bash
+    yarn styles
+```
