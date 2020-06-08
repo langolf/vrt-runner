@@ -70,8 +70,6 @@ async function diffPair({ baseline, test }: FilePair, toDir: string): Promise<nu
         const diffFile = path.join(toDir, path.basename(baseline));
         fs.writeFileSync(diffFile, PNG.sync.write(diff));
 
-        console.info(`${numDiffPixels} ${baseline}`);
-
         return numDiffPixels;
     } catch (error) {
         console.error(`Error diffing file ${baseline}: ${error.stack || error.toString()}`);
