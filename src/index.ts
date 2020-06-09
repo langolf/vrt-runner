@@ -28,8 +28,11 @@ export default async function runVrt({
 
     // Copy files to result first
     fs.copySync(path.resolve(__dirname, 'report-assets'), path.resolve(output));
-    fs.copySync(path.resolve(cwd, 'baseline'), dirs.baseline);
-    fs.copySync(path.resolve(cwd, 'test'), dirs.test);
+
+    if (output !== cwd) {
+        fs.copySync(path.resolve(cwd, 'baseline'), dirs.baseline);
+        fs.copySync(path.resolve(cwd, 'test'), dirs.test);
+    }
 
     // Collect images from baseline and testing paths
     try {
