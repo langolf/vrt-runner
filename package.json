@@ -1,6 +1,6 @@
 {
   "name": "@magiclab/vrt-runner",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "VRT runner and result generator for images",
   "main": "build/index.js",
   "repository": "https://github.com/badoo/vrt-runner",
@@ -8,7 +8,10 @@
   "license": "MIT",
   "private": false,
   "bin": "build/bin.js",
-  "keywords": ["vrt", "vrt-runner"],
+  "keywords": [
+    "vrt",
+    "vrt-runner"
+  ],
   "devDependencies": {
     "@types/eslint-plugin-prettier": "^3.1.0",
     "@types/eslint": "^6.8.1",
@@ -34,7 +37,8 @@
     "build": "rm -rf build && mkdir -p build && cp -R src/report-assets build && ./node_modules/.bin/tsc",
     "styles": "npx node-sass --no-source-map ./src/report-assets/css/vrt.scss ./src/report-assets/css/vrt.css --output-style compressed",
     "tsc:lint": "tsc --incremental --noEmit false",
-    "test": "npm run build && node build/bin.js --cwd test/1/ --output tmp/result/",
+    "test": "npm run build && node build/bin.js --cwd ./test/1/ --output ./tmp/result/",
+    "test:debug": "npm run build && devtool build/bin.js --cwd ./test/1/ --output ./tmp/result/",
     "prepublish": "npm run build"
   },
   "dependencies": {

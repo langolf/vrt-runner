@@ -51,30 +51,57 @@ function filePairs(dirs: DirsType): FilePair[] {
         .filter(Boolean);
 }
 
-async function diffPair({ baseline, test }: FilePair, toDir: string): Promise<number> {
-    if (!baseline || !test) {
-        console.error(`Baseline or test missing ${baseline} ${test}`);
+async function diffPair(
+    { baseline: baselinePath, test: testPath }: FilePair,
+    toDir: string
+): Promise<number> {
+    if (!baselinePath || !testPath) {
+        console.error(`Baseline or test missing ${baselinePath} ${testPath}`);
         return Promise.reject();
     }
 
     try {
-        const img1 = PNG.sync.read(fs.readFileSync(baseline));
-        const img2 = PNG.sync.read(fs.readFileSync(test));
-        const { width, height } = img1;
+        const { baseline, test } = getEqualSizedImages(baselinePath, testPath);
+        const { width, height } = baseline;
         const diff = new PNG({ width, height });
 
-        const numDiffPixels = pixelmatch(img1.data, img2.data, diff.data, width, height, {
+        const numDiffPixels = pixelmatch(baseline.data, test.data, diff.data, width, height, {
             threshold: 0.1,
         });
 
-        const diffFile = path.join(toDir, path.basename(baseline));
+        const diffFile = path.join(toDir, path.basename(baselinePath));
         fs.writeFileSync(diffFile, PNG.sync.write(diff));
 
         return numDiffPixels;
     } catch (error) {
-        console.error(`Error diffing file ${baseline}: ${error.stack || error.toString()}`);
-        throw error;
+        console.error(`Error diffing file ${baselinePath}: ${error.stack || error.toString()}`);
+        return -1;
     }
+}
+
+function getEqualSizedImages(baselinePath: string, testPath: string) {
+    const baseline = PNG.sync.read(fs.readFileSync(baselinePath));
+    const test = PNG.sync.read(fs.readFileSync(testPath));
+
+    // Same sized images, return
+    if (baseline.width === test.width && baseline.height === test.height) {
+        return { baseline, test };
+    }
+
+    // They are different sizes, find the smallest dimension that will fix and crop both
+    const finalWidth = Math.min(baseline.width, test.width);
+    const finalHeight = Math.min(baseline.height, test.height);
+
+    const newBaseline = new PNG({ width: finalWidth, height: finalHeight });
+    const newTest = new PNG({ width: finalWidth, height: finalHeight });
+
+    new PNG(baseline).bitblt(newBaseline, 0, 0, finalWidth, finalHeight, 0, 0);
+    new PNG(test).bitblt(newBaseline, 0, 0, finalWidth, finalHeight, 0, 0);
+
+    return {
+        baseline: newBaseline,
+        test: newTest,
+    };
 }
 
 export type DiffResult = {
