@@ -16,6 +16,31 @@ export type ComparisonOptionsType = {
     diffMask?: boolean;
 };
 
+const prepareOptions = (options?: ComparisonOptionsType): undefined | ComparisonOptionsType => {
+    const optionKeys = options ? Object.keys(options) : [];
+
+    if (optionKeys.length === 0) {
+        return undefined;
+    }
+
+    if (options) {
+        optionKeys.forEach((key) => {
+            const propertyName = key as keyof ComparisonOptionsType;
+
+            if (options && options[propertyName] === undefined) {
+                delete options[propertyName];
+            }
+        });
+    }
+
+    // default value for threshold
+    if (options && options.threshold === undefined) {
+        options.threshold = 0.1;
+    }
+
+    return options;
+};
+
 function arrayUnique<T>(array: T[]): T[] {
     const a = array.concat();
 
@@ -85,7 +110,7 @@ async function diffPair(
             diff.data,
             width,
             height,
-            options
+            prepareOptions(options)
         );
 
         const diffFile = path.join(toDir, path.basename(baselinePath));
