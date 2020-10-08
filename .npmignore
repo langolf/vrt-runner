@@ -3,8 +3,10 @@ test/
 tmp/
 .vscode/
 build/tsconfig.tsbuildinfo
+.eslintcache
 .eslintignore
 .eslintrc.js
 .prettierrc
 tsconfig.json
 example.png
+yarn.lock

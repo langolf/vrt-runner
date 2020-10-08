@@ -8,12 +8,17 @@ export default async function runVrt({
     teamcity,
     output,
     cwd,
+    scrTime,
+    threshold,
 }: {
     teamcity: boolean;
     output: string;
     cwd: string;
+    scrTime?: number;
+    threshold?: number;
 }) {
     const reportFile = path.resolve(output, 'index.html');
+    const screenshotsTime = scrTime ? `Screenshots time: ${scrTime / 1000} s.` : '';
 
     const dirs: DirsType = {
         baseline: path.resolve(output, 'baseline'),
@@ -39,14 +44,14 @@ export default async function runVrt({
         // Compare
         console.info(`Comparing images...`);
         let cmpTime = Date.now();
-        const result = await diffDirs({ dirs, teamcity });
+        const result = await diffDirs({ dirs, teamcity, threshold });
         cmpTime = Date.now() - cmpTime;
 
         console.info(
             `==================
 Tests failed: ${result.failed.length + result.missing.length}
 Tests passed: ${result.passed.length + result.new.length}
-Screenshots time: ${/*scrTime / 1000*/ ''} s.
+${screenshotsTime}
 Diff time: ${cmpTime / 1000} s.`
         );
 

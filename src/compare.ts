@@ -3,6 +3,16 @@ import path from 'path';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 
+function setThreshold(index?: number) {
+    let result = 0.1;
+
+    if (typeof index === 'number' && index > 0 && index < 1) {
+        result = index;
+    }
+
+    return result;
+}
+
 function arrayUnique<T>(array: T[]): T[] {
     const a = array.concat();
 
@@ -53,7 +63,8 @@ function filePairs(dirs: DirsType): FilePair[] {
 
 async function diffPair(
     { baseline: baselinePath, test: testPath }: FilePair,
-    toDir: string
+    toDir: string,
+    threshold?: number
 ): Promise<number> {
     if (!baselinePath || !testPath) {
         console.error(`Baseline or test missing ${baselinePath} ${testPath}`);
@@ -66,7 +77,7 @@ async function diffPair(
         const diff = new PNG({ width, height });
 
         const numDiffPixels = pixelmatch(baseline.data, test.data, diff.data, width, height, {
-            threshold: 0.1,
+            threshold: setThreshold(threshold),
         });
 
         const diffFile = path.join(toDir, path.basename(baselinePath));
@@ -117,7 +128,15 @@ export type DiffResult = {
 // options.baseline {String} - baseline directory
 // options.test {String} - test directory
 // options.diff {String} - diff directory
-async function diffDirs({ dirs, teamcity }: { dirs: DirsType; teamcity: boolean }) {
+async function diffDirs({
+    dirs,
+    teamcity,
+    threshold,
+}: {
+    dirs: DirsType;
+    teamcity: boolean;
+    threshold?: number;
+}) {
     const pairs = filePairs(dirs);
 
     const result: DiffResult = {
@@ -151,7 +170,7 @@ async function diffDirs({ dirs, teamcity }: { dirs: DirsType; teamcity: boolean 
             );
             result.missing.push(fileName);
         } else {
-            const numDiffPixels = await diffPair(pair, dirs.diff);
+            const numDiffPixels = await diffPair(pair, dirs.diff, threshold);
 
             if (numDiffPixels > 0) {
                 teamcityMessage(
