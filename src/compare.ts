@@ -3,15 +3,18 @@ import path from 'path';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 
-function setThreshold(index?: number) {
-    let result = 0.1;
+// based on pixelMatch options
+type RGBTuple = [number, number, number];
 
-    if (typeof index === 'number' && index > 0 && index < 1) {
-        result = index;
-    }
-
-    return result;
-}
+export type ComparisonOptionsType = {
+    threshold?: number;
+    includeAA?: boolean;
+    alpha?: number;
+    aaColor?: RGBTuple;
+    diffColor?: RGBTuple;
+    diffColorAlt?: RGBTuple;
+    diffMask?: boolean;
+};
 
 function arrayUnique<T>(array: T[]): T[] {
     const a = array.concat();
@@ -64,7 +67,7 @@ function filePairs(dirs: DirsType): FilePair[] {
 async function diffPair(
     { baseline: baselinePath, test: testPath }: FilePair,
     toDir: string,
-    threshold?: number
+    options?: ComparisonOptionsType
 ): Promise<number> {
     if (!baselinePath || !testPath) {
         console.error(`Baseline or test missing ${baselinePath} ${testPath}`);
@@ -76,9 +79,14 @@ async function diffPair(
         const { width, height } = baseline;
         const diff = new PNG({ width, height });
 
-        const numDiffPixels = pixelmatch(baseline.data, test.data, diff.data, width, height, {
-            threshold: setThreshold(threshold),
-        });
+        const numDiffPixels = pixelmatch(
+            baseline.data,
+            test.data,
+            diff.data,
+            width,
+            height,
+            options
+        );
 
         const diffFile = path.join(toDir, path.basename(baselinePath));
         fs.writeFileSync(diffFile, PNG.sync.write(diff));
@@ -122,21 +130,18 @@ export type DiffResult = {
     missing: string[];
 };
 
+type diffDirsType = {
+    dirs: DirsType;
+    teamcity: boolean;
+    options?: ComparisonOptionsType;
+};
 // For every .png or .jpg file in baseline directory:
 // - will try to find file with the same name in test directory
 // - if found, will create a diff file in diff directory
 // options.baseline {String} - baseline directory
 // options.test {String} - test directory
 // options.diff {String} - diff directory
-async function diffDirs({
-    dirs,
-    teamcity,
-    threshold,
-}: {
-    dirs: DirsType;
-    teamcity: boolean;
-    threshold?: number;
-}) {
+async function diffDirs({ dirs, teamcity, options }: diffDirsType) {
     const pairs = filePairs(dirs);
 
     const result: DiffResult = {
@@ -170,7 +175,7 @@ async function diffDirs({
             );
             result.missing.push(fileName);
         } else {
-            const numDiffPixels = await diffPair(pair, dirs.diff, threshold);
+            const numDiffPixels = await diffPair(pair, dirs.diff, options);
 
             if (numDiffPixels > 0) {
                 teamcityMessage(

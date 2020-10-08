@@ -20,79 +20,7 @@ path_to_diff_images
     └── 2.png
 ```
 
-## How to measure screenShot time
-
-One of the ways to provide this data is the following:
-
-### Share screenShot time in Node
-
-```js
-
-(async function() {
-    try {
-        let scrTime = Date.now();
-
-        // ... this is your screenshot taking script implementation ...
-
-        scrTime = Date.now() - scrTime;
-
-        runVrt({
-            cwd,
-            output,
-            teamcity, // boolean flag to know if we should log teamcity friendly output
-            scrTime, // screenshot taking time in miliseconds
-            threshold // Matching threshold, ranges from 0 to 1. Smaller values make the comparison more sensitive.
-        });
-    }
-    process.exit(0);
-})();
-```
-
-### Share screenShot time via CLI
-
-```bash
-    npx @magiclab/vrt-runner --cwd path_to_diff_images --output result_output --scrTime=10
-```
-
-## How to change matching threshold for image comparison
-
-Default values is 0.1
-
-You might want to change the different comparison diff levels for different instances `vrt-runner`:
-
-### Change comparison diff threshold in Node
-
-```js
-    const threshold = 0.2;
-
-    const vrtIntance01 = runVrt({
-        cwd,
-        output,
-        teamcity, // boolean flag to know if we should log teamcity friendly output
-        scrTime, // screenshot taking time in miliseconds
-        threshold // Matching threshold, ranges from 0 to 1. Smaller values make the comparison more sensitive.
-    });
-
-    const anotherThreshold = 0.25;
-
-    const vrtIntance03 = runVrt({
-        cwd,
-        output,
-        teamcity, // boolean flag to know if we should log teamcity friendly output
-        scrTime, // screenshot taking time in miliseconds
-        anotherThreshold // Matching threshold, ranges from 0 to 1. Smaller values make the comparison more sensitive.
-    });
-
-    const vrtIntance03 = runVrt({
-        cwd,
-        output,
-        teamcity, // boolean flag to know if we should log teamcity friendly output
-        scrTime, // screenshot taking time in miliseconds
-    });
-})();
-```
-
-### Change comparison diff threshold via CLI
+### Change options via CLI, e.g. comparison diff threshold
 
 ```bash
     npx @magiclab/vrt-runner --cwd path_to_diff_images --output result_output --threshold=0.25
@@ -109,10 +37,83 @@ runVrt({
     cwd,
     output,
     teamcity, // boolean flag to know if we should log teamcity friendly output
-    scrTime, // optional: screenshot taking time in miliseconds
-    threshold // optional: Matching threshold, ranges from 0 to 1. Smaller values make the comparison more sensitive.
+    options, // optional: parameters for pixelmatch
 });
 ```
+
+## Hooks
+
+Currently we support `onVrtComplete` hook, which allows you to get results of comparison and timing of comparison.
+
+One of the ways to use this data is the following:
+
+```js
+
+(async function() {
+    try {
+        // define action
+        const onVrtCompleteAction: onVrtCompleteType = (result, cmpTime) => {
+            const info = showResults({
+                failed: result.failed.length + result.missing.length,
+                passed: result.passed.length + result.new.length,
+                diffTime: cmpTime / 1000,
+            });
+
+            return info;
+        };
+
+        // save data after runVrt
+        const info = await runVrt({
+            cwd,
+            output,
+            teamcity, // boolean flag to know if we should log teamcity friendly output
+            onVrtComplete: onVrtCompleteAction
+        });
+
+        // work with data
+        console.log(info);
+    }
+    process.exit(0);
+})();
+```
+
+## How to change optons for `pixelmatch` instance
+
+You might want to change the different comparison options in instances of `vrt-runner`. You can do it via `options`, which are are aligned with [pixelmatch API](https://github.com/mapbox/pixelmatch)
+
+### Change comparison diff threshold in Node
+
+```js
+    const options = {
+        threshold:0.2
+    };
+
+    const vrtIntance01 = runVrt({
+        cwd,
+        output,
+        teamcity, // boolean flag to know if we should log teamcity friendly output
+        options,
+    });
+
+    const optionsSecondType = {
+        threshold:0.2
+    };
+
+    const vrtIntance03 = runVrt({
+        cwd,
+        output,
+        teamcity, // boolean flag to know if we should log teamcity friendly output
+        optionsSecondType,
+    });
+
+    const vrtIntance03 = runVrt({
+        cwd,
+        output,
+        teamcity, // boolean flag to know if we should log teamcity friendly output
+    });
+})();
+```
+
 
 ## Assets
 
