@@ -1,11 +1,11 @@
 import fs from 'fs';
-import { DiffResult } from 'index';
+import { VRTResultsEntries } from 'index';
 
-export default function generateReport(reportFile: string, vrtResult: DiffResult) {
+export default function generateReport(reportFile: string, vrtResult: VRTResultsEntries) {
     fs.writeFileSync(reportFile, html(vrtResult));
 }
 
-function html(vrtResult: DiffResult) {
+function html(vrtResult: VRTResultsEntries) {
     return `
         <!doctype html>
         <html lang="en">
@@ -42,7 +42,7 @@ function navigation() {
     `;
 }
 
-function main({ newItems, deletedItems, failedItems, passedItems }: DiffResult) {
+function main({ newItems, deletedItems, failedItems, passedItems }: VRTResultsEntries) {
     return `
         <div class="vrt-main">
             <div class="suite vrt">

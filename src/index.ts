@@ -4,28 +4,56 @@ import fs from 'fs-extra';
 import mkdirp from 'mkdirp';
 import execa from 'execa';
 
-export type DirsType = {
-    baseline: string;
-    test: string;
-    diff: string;
-};
-
-export type DiffResult = {
+export type VRTResultsEntries = {
     failedItems: string[];
     passedItems: string[];
     newItems: string[];
     deletedItems: string[];
 };
 
-export default async function runVrt({ output, cwd }: { output: string; cwd: string }) {
-    const reportPage = path.resolve(output, 'index.html');
-    const diffReportFile = path.resolve(output, 'diff-report.json');
+/** https://github.com/reg-viz/reg-cli#options */
+export type VRTCommandOptions = {
+    matchingThreshold?: number;
+    thresholdRate?: number;
+    thresholdPixel?: number;
+    enableAntialias?: boolean;
+    additionalDetection?: boolean;
+    concurrency?: number;
+    ignoreChange?: boolean;
+};
 
-    const dirs: DirsType = {
+function setVrtOptions(options: VRTCommandOptions): string[] {
+    const defaultOptions: VRTCommandOptions = {
+        matchingThreshold: 0.05,
+        enableAntialias: true,
+        ignoreChange: true,
+    };
+
+    return Object.entries({ ...defaultOptions, ...options }).map(
+        (item) => `--${item[0]}=${item[1]}`
+    );
+}
+
+export default async function runVrt({
+    output,
+    cwd,
+    options,
+}: {
+    output: string;
+    cwd: string;
+    options: VRTCommandOptions;
+}) {
+    const dirs = {
         baseline: path.resolve(output, 'baseline'),
         test: path.resolve(output, 'test'),
         diff: path.resolve(output, 'diff'),
     };
+
+    const reportPage = path.resolve(output, 'index.html');
+    const vrtCommandReportFile = path.relative(
+        process.cwd(),
+        path.resolve(output, 'diff-report.json')
+    );
 
     // Ensure test dirs exists
     mkdirp.sync(dirs.baseline);
@@ -40,21 +68,32 @@ export default async function runVrt({ output, cwd }: { output: string; cwd: str
         fs.copySync(path.resolve(cwd, 'test'), dirs.test);
     }
 
-    // Collect images from baseline and testing paths
     try {
-        console.info(`Comparing images...`);
         let cmpTime = Date.now();
-        execa.commandSync(
-            `reg-cli ${dirs.test} ${dirs.baseline} ${dirs.diff} -A -I -J ${diffReportFile}`,
+
+        execa.sync(
+            'reg-cli',
+            [
+                dirs.test,
+                dirs.baseline,
+                dirs.diff,
+                `--json=${vrtCommandReportFile}`,
+                ...setVrtOptions(options),
+            ],
             {
                 stdout: process.stdout,
             }
         );
+
         cmpTime = Date.now() - cmpTime;
         console.info(`Diff time: ${cmpTime / 1000} s.`);
 
-        const diffResultData: DiffResult = JSON.parse(fs.readFileSync(diffReportFile, 'utf8'));
+        const diffResultData: VRTResultsEntries = JSON.parse(
+            fs.readFileSync(vrtCommandReportFile, 'utf8')
+        );
+
         generateReport(reportPage, diffResultData);
+
         console.info('Report generated to', reportPage);
         process.exit(0);
     } catch (error) {
