@@ -1,6 +1,6 @@
 {
   "name": "@magiclab/vrt-runner",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "description": "VRT runner and result generator for images",
   "main": "build/index.js",
   "repository": "https://github.com/badoo/vrt-runner",
@@ -18,8 +18,6 @@
     "@types/fs-extra": "^9.0.0",
     "@types/mkdirp": "^1.0.0",
     "@types/node": "^10.17.21",
-    "@types/pixelmatch": "^5.2.1",
-    "@types/pngjs": "^3.4.2",
     "@types/prettier": "^2.0.0",
     "@types/yargs": "^15.0.5",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
@@ -37,15 +35,16 @@
     "build": "rm -rf build && mkdir -p build && cp -R src/report-assets build && ./node_modules/.bin/tsc",
     "styles": "npx node-sass --no-source-map ./src/report-assets/css/vrt.scss ./src/report-assets/css/vrt.css --output-style compressed",
     "tsc:lint": "tsc --incremental --noEmit false",
-    "test": "npm run build && node build/bin.js --cwd ./test/1/ --output ./tmp/result/",
-    "test:debug": "npm run build && devtool build/bin.js --cwd ./test/1/ --output ./tmp/result/",
+    "test:clean": "rm -rf tmp/result",
+    "test": "npm run build && npm run test:clean && node build/bin.js --cwd test/1 --output tmp/result",
+    "test:debug": "npm run build && node --inspect --inspect-brk build/bin.js --cwd test/1/ --output tmp/result/",
     "prepublish": "npm run build"
   },
   "dependencies": {
+    "execa": "^4.0.3",
     "fs-extra": "^9.0.0",
     "mkdirp": "^1.0.4",
-    "pixelmatch": "^5.2.0",
-    "pngjs": "^5.0.0",
+    "reg-cli": "^0.16.1",
     "yargs": "^15.3.1"
   }
 }
