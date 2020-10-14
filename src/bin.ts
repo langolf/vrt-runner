@@ -1,22 +1,10 @@
 #!/usr/bin/env node
 
-import yargs = require('yargs');
 import path from 'path';
+import yargs from 'yargs';
 import runVrt from './index';
 
-export interface VrtOptions {
-    cwd: string;
-    output: string;
-    matchingThreshold?: number;
-    thresholdRate?: number;
-    thresholdPixel?: number;
-    enableAntialias?: boolean;
-    additionalDetection?: boolean;
-    concurrency?: number;
-    ignoreChange?: boolean;
-}
-
-const argv: VrtOptions = yargs(process.argv.slice(2))
+const { cwd, output, ...options } = yargs(process.argv.slice(2))
     .options({
         cwd: { type: 'string', default: process.cwd(), demandCommand: true },
         output: {
@@ -39,6 +27,6 @@ const argv: VrtOptions = yargs(process.argv.slice(2))
     })
     .strict().argv;
 
-console.log(argv);
+const regCliOptions: [string, any][] = Object.entries(options).slice(1, -1); // yargs extra keys
 
-runVrt(argv);
+runVrt({ cwd, output, options: regCliOptions });

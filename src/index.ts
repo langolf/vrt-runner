@@ -1,11 +1,18 @@
-import { VrtOptions } from './bin';
 import path from 'path';
 import generateReportTemplate from './report';
 import fs from 'fs-extra';
 import mkdirp from 'mkdirp';
 import execa from 'execa';
 
-export default async function runVrt({ output, cwd, ...options }: VrtOptions) {
+export default async function runVrt({
+    output,
+    cwd,
+    options,
+}: {
+    output: string;
+    cwd: string;
+    options: [string, any][];
+}) {
     const dirs = {
         baseline: path.resolve(output, 'baseline'),
         test: path.resolve(output, 'test'),
@@ -36,17 +43,12 @@ export default async function runVrt({ output, cwd, ...options }: VrtOptions) {
         let cmpTime = Date.now();
 
         // we have to convert to strings
-        const regFlags = Object.entries(options).map(([key, value]) => `--${key}=${value}`);
+        // const regFlags = options.map((option) => option.map((item) => `--${item[0]}=${item[1]}`));
+        const flags = options.map(([key, value]) => `--${key}=${value}`);
 
         execa.sync(
             'reg-cli',
-            [
-                dirs.test,
-                dirs.baseline,
-                dirs.diff,
-                `--json=${vrtCommandReportFile}`,
-                ...regFlags.slice(1, -1), // remove yargs extra keys
-            ],
+            [dirs.test, dirs.baseline, dirs.diff, `--json=${vrtCommandReportFile}`, ...flags],
             {
                 stdout: process.stdout,
             }

@@ -26,15 +26,15 @@ path_to_diff_images
     npx @magiclab/vrt-runner --cwd path_to_diff_images --output result_output --thresholdRate=0.25
 ```
 
-| Variable Name         | Description                                                                                                                                                                                                    |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| --ignoreChange        | If true, error will not be thrown when image change detected. Default true                                                                                                                                     |
-| --matchingThreshold   | Matching threshold, ranges from 0 to 1. Smaller values make the comparison more sensitive. 0.05 by default.                                                                                                    |
-| --thresholdRate       | Rate threshold for detecting change. When the difference ratio of the image is larger than the set rate detects the change. Applied after matchingThreshold.                                                   |
-| --thresholdPixel      | Pixel threshold for detecting change. When the difference pixel of the image is larger than the set pixel detects the change. This value takes precedence over thresholdRate. Applied after matchingThreshold. |
-| --concurrency         | How many processes launches in parallel. If omitted 4                                                                                                                                                          |
-| --enableAntialias     | Enable antialias. If omitted true                                                                                                                                                                              |
-| --additionalDetection | Enable additional difference detection(highly experimental). Select "none" or "client" (default: "none").                                                                                                      |
+| Variable Name           | Description                                                                                                                                                                                                    |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ignoreChange`        | If `true`, error will not be thrown when image change detected. Default `true`                                                                                                                                 |
+| `--matchingThreshold`   | Matching threshold, ranges from 0 to 1. Smaller values make the comparison more sensitive. `0.05` by default. `0` by default for reg-cli.                                                                      |
+| `--thresholdRate`       | Rate threshold for detecting change. When the difference ratio of the image is larger than the set rate detects the change. Applied after matchingThreshold.                                                   |
+| `--thresholdPixel`      | Pixel threshold for detecting change. When the difference pixel of the image is larger than the set pixel detects the change. This value takes precedence over thresholdRate. Applied after matchingThreshold. |
+| `--concurrency`         | How many processes launches in parallel. If omitted 4                                                                                                                                                          |
+| `--enableAntialias`     | Enable antialias. If omitted `true`                                                                                                                                                                            |
+| `--additionalDetection` | Enable additional difference detection(highly experimental). Select "none" or "client" (default: `none`).                                                                                                      |
 
 ## Node
 
