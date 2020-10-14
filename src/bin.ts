@@ -1,16 +1,42 @@
 #!/usr/bin/env node
 
-import { argv } from 'yargs';
+import yargs = require('yargs');
 import path from 'path';
 import runVrt from './index';
-import { VRTCommandOptions } from './index';
 
-const cwd = (argv.cwd as string) || process.cwd();
-const output = (argv.output as string) || path.resolve(cwd, 'result');
-const options = (argv.options as VRTCommandOptions) || {};
+export interface VrtOptions {
+    cwd: string;
+    output: string;
+    /** https://github.com/reg-viz/reg-cli#options */
+    matchingThreshold?: number;
+    thresholdRate?: number;
+    thresholdPixel?: number;
+    enableAntialias?: boolean;
+    additionalDetection?: boolean;
+    concurrency?: number;
+    ignoreChange?: boolean;
+}
 
-runVrt({
-    cwd,
-    output,
-    options,
-});
+const argv: VrtOptions = yargs(process.argv.slice(2))
+    .options({
+        cwd: { type: 'string', default: process.cwd(), demandCommand: true },
+        output: {
+            type: 'string',
+            default: path.resolve(process.cwd(), 'result'),
+            demandCommand: true,
+        },
+        matchingThreshold: { type: 'number', default: 0.05 },
+        thresholdRate: { type: 'number' },
+        thresholdPixel: { type: 'number' },
+        enableAntialias: { type: 'boolean', default: true },
+        additionalDetection: { type: 'boolean' },
+        concurrency: { type: 'number' },
+        ignoreChange: { type: 'boolean', default: true },
+    })
+    .parserConfiguration({
+        'strip-aliased': true,
+        'strip-dashed': true,
+        'camel-case-expansion': false,
+    }).argv;
+
+runVrt(argv);

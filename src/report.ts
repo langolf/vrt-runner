@@ -1,11 +1,11 @@
-import fs from 'fs';
-import { VRTResultsEntries } from 'index';
+type VRTResultsEntries = {
+    failedItems: string[];
+    passedItems: string[];
+    newItems: string[];
+    deletedItems: string[];
+};
 
-export default function generateReport(reportFile: string, vrtResult: VRTResultsEntries) {
-    fs.writeFileSync(reportFile, html(vrtResult));
-}
-
-function html(vrtResult: VRTResultsEntries) {
+export default function generateReportTemplate(data: VRTResultsEntries) {
     return `
         <!doctype html>
         <html lang="en">
@@ -19,7 +19,7 @@ function html(vrtResult: VRTResultsEntries) {
         <body class="page-comparison">
             <div class="vrt-wrapper">
                 ${navigation()}
-                ${main(vrtResult)}
+                ${main(data)}
             </div>
             <script src="./js/comparison.js" async></script>
         </body>
