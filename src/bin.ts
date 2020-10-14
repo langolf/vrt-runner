@@ -7,7 +7,6 @@ import runVrt from './index';
 export interface VrtOptions {
     cwd: string;
     output: string;
-    /** https://github.com/reg-viz/reg-cli#options */
     matchingThreshold?: number;
     thresholdRate?: number;
     thresholdPixel?: number;
@@ -37,6 +36,9 @@ const argv: VrtOptions = yargs(process.argv.slice(2))
         'strip-aliased': true,
         'strip-dashed': true,
         'camel-case-expansion': false,
-    }).argv;
+    })
+    .strict().argv;
+
+console.log(argv);
 
 runVrt(argv);

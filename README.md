@@ -2,7 +2,7 @@
 
 VRT runner and result generator for images
 
-![VRT Example](https://raw.githubusercontent.com/badoo/vrt-runner/master/example.png "VRT Example")
+![VRT Example](https://raw.githubusercontent.com/badoo/vrt-runner/master/example.png 'VRT Example')
 
 ## CLI
 
@@ -23,8 +23,18 @@ path_to_diff_images
 ### Change options via CLI, e.g. comparison diff threshold
 
 ```bash
-    npx @magiclab/vrt-runner --cwd path_to_diff_images --output result_output --threshold=0.25
+    npx @magiclab/vrt-runner --cwd path_to_diff_images --output result_output --thresholdRate=0.25
 ```
+
+| Variable Name         | Description                                                                                                                                                                                                    |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| --ignoreChange        | If true, error will not be thrown when image change detected. Default true                                                                                                                                     |
+| --matchingThreshold   | Matching threshold, ranges from 0 to 1. Smaller values make the comparison more sensitive. 0.05 by default.                                                                                                    |
+| --thresholdRate       | Rate threshold for detecting change. When the difference ratio of the image is larger than the set rate detects the change. Applied after matchingThreshold.                                                   |
+| --thresholdPixel      | Pixel threshold for detecting change. When the difference pixel of the image is larger than the set pixel detects the change. This value takes precedence over thresholdRate. Applied after matchingThreshold. |
+| --concurrency         | How many processes launches in parallel. If omitted 4                                                                                                                                                          |
+| --enableAntialias     | Enable antialias. If omitted true                                                                                                                                                                              |
+| --additionalDetection | Enable additional difference detection(highly experimental). Select "none" or "client" (default: "none").                                                                                                      |
 
 ## Node
 
@@ -36,8 +46,6 @@ import runVrt from '@magiclab/vrt-runner';
 runVrt({
     cwd,
     output,
-    teamcity, // boolean flag to know if we should log teamcity friendly output
-    options, // optional: parameters for pixelmatch
 });
 ```
 
@@ -48,8 +56,7 @@ Currently we support `onVrtComplete` hook, which allows you to get results of co
 One of the ways to use this data is the following:
 
 ```js
-
-(async function() {
+(async function () {
     try {
         // define action
         const onVrtCompleteAction: onVrtCompleteType = (result, cmpTime) => {
@@ -67,7 +74,7 @@ One of the ways to use this data is the following:
             cwd,
             output,
             teamcity, // boolean flag to know if we should log teamcity friendly output
-            onVrtComplete: onVrtCompleteAction
+            onVrtComplete: onVrtCompleteAction,
         });
 
         // work with data
@@ -113,7 +120,6 @@ You might want to change the different comparison options in instances of `vrt-r
     });
 })();
 ```
-
 
 ## Assets
 
