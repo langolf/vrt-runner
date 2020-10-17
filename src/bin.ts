@@ -4,9 +4,10 @@ import path from 'path';
 import yargs from 'yargs';
 import runVrt from './index';
 
-const { cwd, output, ...options } = yargs(process.argv.slice(2))
+const { cwd, output, teamcity, ...rest } = yargs(process.argv.slice(2))
     .options({
         cwd: { type: 'string', default: process.cwd(), demandCommand: true },
+        teamcity: { type: 'boolean', default: true },
         output: {
             type: 'string',
             default: path.resolve(process.cwd(), 'result'),
@@ -27,6 +28,6 @@ const { cwd, output, ...options } = yargs(process.argv.slice(2))
     })
     .strict().argv;
 
-const regCliOptions: [string, any][] = Object.entries(options).slice(1, -1); // yargs extra keys
+const regCliOptions: [string, any][] = Object.entries(rest).slice(1, -1); // yargs extra keys
 
-runVrt({ cwd, output, options: regCliOptions });
+runVrt({ cwd, output, teamcity, options: regCliOptions });

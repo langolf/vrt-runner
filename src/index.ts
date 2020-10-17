@@ -4,6 +4,11 @@ import fs from 'fs-extra';
 import mkdirp from 'mkdirp';
 import execa from 'execa';
 
+// Special log messages for TeamCity service. Using by other platforms
+function teamcityLogger(message: string) {
+    console.info(`##teamcity[${message}]`);
+}
+
 export default async function runVrt({
     output,
     cwd,
@@ -11,6 +16,7 @@ export default async function runVrt({
 }: {
     output: string;
     cwd: string;
+    teamcity: boolean;
     options: [string, any][];
 }) {
     const dirs = {
@@ -40,6 +46,7 @@ export default async function runVrt({
     }
 
     try {
+        teamcityLogger(`testSuiteStarted name='VRT'`);
         let cmpTime = Date.now();
 
         // we have to convert to strings
@@ -56,12 +63,32 @@ export default async function runVrt({
 
         cmpTime = Date.now() - cmpTime;
         console.info(`Diff time: ${cmpTime / 1000} s.`);
+        teamcityLogger(`testSuiteFinished name='VRT'`);
 
-        fs.writeFileSync(
-            reportPage,
-            generateReportTemplate(JSON.parse(fs.readFileSync(vrtCommandReportFile, 'utf8')))
-        );
+        const vrtReportStats: {
+            failedItems: string[];
+            passedItems: string[];
+            newItems: string[];
+            deletedItems: string[];
+        } = JSON.parse(fs.readFileSync(vrtCommandReportFile, 'utf8'));
 
+        if (vrtReportStats.failedItems.length > 0) {
+            for (const file of vrtReportStats.failedItems) {
+                teamcityLogger(
+                    `testFailed name='${file}' message='sandbox screenshots are different' details=''`
+                );
+            }
+        }
+
+        if (vrtReportStats.deletedItems.length > 0) {
+            for (const file of vrtReportStats.deletedItems) {
+                teamcityLogger(
+                    `testFailed name='${file}' message='sandbox screenshots are missing' details=''`
+                );
+            }
+        }
+
+        fs.writeFileSync(reportPage, generateReportTemplate(vrtReportStats));
         console.info('Report generated to', reportPage);
         process.exit(0);
     } catch (error) {
