@@ -2,6 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import execa from 'execa';
 
+export type ComparisonOptionsType = {
+    matchingThreshold?: number;
+    thresholdRate?: number;
+    thresholdPixel?: number;
+    enableAntialias?: boolean;
+    additionalDetection?: boolean;
+    concurrency?: number;
+    ignoreChange?: boolean;
+};
+
 export type DiffResult = {
     failedItems: string[];
     passedItems: string[];
@@ -13,7 +23,7 @@ type diffDirsType = {
     output: string;
     dirs: DirsType;
     teamcity: boolean;
-    options: {};
+    options: ComparisonOptionsType;
 };
 // For every .png or .jpg file in baseline directory:
 // - will try to find file with the same name in test directory

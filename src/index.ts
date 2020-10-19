@@ -1,5 +1,5 @@
 import path from 'path';
-import diffDirs, { DirsType, DiffResult } from './compare';
+import diffDirs, { DirsType, DiffResult, ComparisonOptionsType } from './compare';
 import generateReport from './report';
 import fs from 'fs-extra';
 import mkdirp from 'mkdirp';
@@ -46,7 +46,7 @@ export default async function runVrt({
     output: string;
     cwd: string;
     onVrtComplete?: onVrtCompleteType;
-    options: {};
+    options: ComparisonOptionsType;
 }) {
     const reportFile = path.resolve(output, 'index.html');
 
