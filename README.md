@@ -2,7 +2,7 @@
 
 VRT runner and result generator for images
 
-![VRT Example](https://raw.githubusercontent.com/badoo/vrt-runner/master/example.png 'VRT Example')
+![VRT Example](https://raw.githubusercontent.com/badoo/vrt-runner/master/example.png "VRT Example")
 
 ## CLI
 
@@ -23,7 +23,7 @@ path_to_diff_images
 ### Change options via CLI, e.g. comparison diff threshold
 
 ```bash
-    npx @magiclab/vrt-runner --cwd path_to_diff_images --output result_output --thresholdRate=0.25
+    npx @magiclab/vrt-runner --cwd path_to_diff_images --output result_output --matchingThreshold 0.25
 ```
 
 | Variable Name           | Description                                                                                                                                                                                                    |
@@ -46,6 +46,8 @@ import runVrt from '@magiclab/vrt-runner';
 runVrt({
     cwd,
     output,
+    teamcity, // boolean flag to know if we should log teamcity friendly output
+    options, // optional: parameters for reg-cli
 });
 ```
 
@@ -56,13 +58,14 @@ Currently we support `onVrtComplete` hook, which allows you to get results of co
 One of the ways to use this data is the following:
 
 ```js
-(async function () {
+
+(async function() {
     try {
         // define action
         const onVrtCompleteAction: onVrtCompleteType = (result, cmpTime) => {
             const info = showResults({
-                failed: result.failed.length + result.missing.length,
-                passed: result.passed.length + result.new.length,
+                failedItems: result.failedItems.length + result.deletedItems.length,
+                passed: result.passedItems.length + result.newItems.length,
                 diffTime: cmpTime / 1000,
             });
 
@@ -74,7 +77,7 @@ One of the ways to use this data is the following:
             cwd,
             output,
             teamcity, // boolean flag to know if we should log teamcity friendly output
-            onVrtComplete: onVrtCompleteAction,
+            onVrtComplete: onVrtCompleteAction
         });
 
         // work with data
@@ -84,7 +87,7 @@ One of the ways to use this data is the following:
 })();
 ```
 
-## How to change optons for `pixelmatch` instance
+## How to change options for `reg-cli` instance
 
 You might want to change the different comparison options in instances of `vrt-runner`. You can do it via `options`, which are are aligned with [pixelmatch API](https://github.com/mapbox/pixelmatch)
 
@@ -92,7 +95,7 @@ You might want to change the different comparison options in instances of `vrt-r
 
 ```js
     const options = {
-        threshold:0.2
+        matchingThreshold: 0.2
     };
 
     const vrtIntance01 = runVrt({
@@ -103,7 +106,7 @@ You might want to change the different comparison options in instances of `vrt-r
     });
 
     const optionsSecondType = {
-        threshold:0.2
+        matchingThreshold: 0.2
     };
 
     const vrtIntance03 = runVrt({
@@ -120,6 +123,7 @@ You might want to change the different comparison options in instances of `vrt-r
     });
 })();
 ```
+
 
 ## Assets
 

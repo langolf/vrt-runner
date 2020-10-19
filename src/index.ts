@@ -1,36 +1,60 @@
 import path from 'path';
-import generateReportTemplate from './report';
+import diffDirs, { DirsType, DiffResult } from './compare';
+import generateReport from './report';
 import fs from 'fs-extra';
 import mkdirp from 'mkdirp';
-import execa from 'execa';
 
-// Special log messages for TeamCity service. Using by other platforms
-function teamcityLogger(message: string) {
-    console.info(`##teamcity[${message}]`);
-}
+const showResults = ({
+    failedItems,
+    passedItems,
+    diffTime,
+}: {
+    failedItems: number;
+    passedItems: number;
+    diffTime: number;
+}) => {
+    const results = `
+    ==================
+    Tests failed: ${failedItems}
+    Tests passed: ${passedItems}
+    Diff time: ${diffTime} s.
+    `;
+
+    return results;
+};
+
+type onVrtCompleteType = (result: DiffResult, cmpTime: number) => void;
+
+const onVrtCompleteDefaultAction: onVrtCompleteType = (result, cmpTime) => {
+    const info = showResults({
+        failedItems: result.failedItems.length + result.deletedItems.length,
+        passedItems: result.passedItems.length + result.newItems.length,
+        diffTime: cmpTime / 1000,
+    });
+
+    console.info(info);
+};
 
 export default async function runVrt({
+    teamcity,
     output,
     cwd,
+    onVrtComplete,
     options,
 }: {
+    teamcity: boolean;
     output: string;
     cwd: string;
-    teamcity: boolean;
-    options: [string, any][];
+    onVrtComplete?: onVrtCompleteType;
+    options: {};
 }) {
-    const dirs = {
+    const reportFile = path.resolve(output, 'index.html');
+
+    const dirs: DirsType = {
         baseline: path.resolve(output, 'baseline'),
         test: path.resolve(output, 'test'),
         diff: path.resolve(output, 'diff'),
     };
-
-    const reportPage = path.resolve(output, 'index.html');
-
-    const vrtCommandReportFile = path.relative(
-        process.cwd(),
-        path.resolve(output, 'diff-report.json')
-    );
 
     // Ensure test dirs exists
     mkdirp.sync(dirs.baseline);
@@ -45,51 +69,27 @@ export default async function runVrt({
         fs.copySync(path.resolve(cwd, 'test'), dirs.test);
     }
 
+    // Collect images from baseline and testing paths
     try {
-        teamcityLogger(`testSuiteStarted name='VRT'`);
+        // Compare
+        console.info(`Comparing images...`);
         let cmpTime = Date.now();
-
-        // we have to convert to strings
-        // const regFlags = options.map((option) => option.map((item) => `--${item[0]}=${item[1]}`));
-        const flags = options.map(([key, value]) => `--${key}=${value}`);
-
-        execa.sync(
-            'reg-cli',
-            [dirs.test, dirs.baseline, dirs.diff, `--json=${vrtCommandReportFile}`, ...flags],
-            {
-                stdout: process.stdout,
-            }
-        );
-
+        const result = await diffDirs({
+            output,
+            dirs,
+            teamcity,
+            options,
+        });
         cmpTime = Date.now() - cmpTime;
-        console.info(`Diff time: ${cmpTime / 1000} s.`);
-        teamcityLogger(`testSuiteFinished name='VRT'`);
 
-        const vrtReportStats: {
-            failedItems: string[];
-            passedItems: string[];
-            newItems: string[];
-            deletedItems: string[];
-        } = JSON.parse(fs.readFileSync(vrtCommandReportFile, 'utf8'));
-
-        if (vrtReportStats.failedItems.length > 0) {
-            for (const file of vrtReportStats.failedItems) {
-                teamcityLogger(
-                    `testFailed name='${file}' message='sandbox screenshots are different' details=''`
-                );
-            }
+        if (onVrtComplete) {
+            onVrtComplete(result, cmpTime);
+        } else {
+            onVrtCompleteDefaultAction(result, cmpTime);
         }
 
-        if (vrtReportStats.deletedItems.length > 0) {
-            for (const file of vrtReportStats.deletedItems) {
-                teamcityLogger(
-                    `testFailed name='${file}' message='sandbox screenshots are missing' details=''`
-                );
-            }
-        }
-
-        fs.writeFileSync(reportPage, generateReportTemplate(vrtReportStats));
-        console.info('Report generated to', reportPage);
+        generateReport(reportFile, result);
+        console.info('Report generated to', reportFile);
         process.exit(0);
     } catch (error) {
         console.error(`Comparing images error: \n${error.stack || error}`);

@@ -1,33 +1,32 @@
 #!/usr/bin/env node
 
+import { argv } from 'yargs';
 import path from 'path';
-import yargs from 'yargs';
 import runVrt from './index';
 
-const { cwd, output, teamcity, ...rest } = yargs(process.argv.slice(2))
-    .options({
-        cwd: { type: 'string', default: process.cwd(), demandCommand: true },
-        teamcity: { type: 'boolean', default: true },
-        output: {
-            type: 'string',
-            default: path.resolve(process.cwd(), 'result'),
-            demandCommand: true,
-        },
-        matchingThreshold: { type: 'number', default: 0.05 },
-        thresholdRate: { type: 'number' },
-        thresholdPixel: { type: 'number' },
-        enableAntialias: { type: 'boolean', default: true },
-        additionalDetection: { type: 'boolean' },
-        concurrency: { type: 'number' },
-        ignoreChange: { type: 'boolean', default: true },
-    })
-    .parserConfiguration({
-        'strip-aliased': true,
-        'strip-dashed': true,
-        'camel-case-expansion': false,
-    })
-    .strict().argv;
+const cwd = (argv.cwd as string) || process.cwd();
+const output = (argv.output as string) || path.resolve(cwd, 'result');
+const teamcity = !!argv.teamcity;
+// higher then 0.05 will cause a fail
+const matchingThreshold = (argv.matchingThreshold as number) || 0.05;
+const thresholdRate = argv.thresholdRate as number | undefined;
+const thresholdPixel = argv.thresholdPixel as number | undefined;
+const enableAntialias = (argv.enableAntialias as boolean) || true;
+const additionalDetection = argv.additionalDetection as boolean | undefined;
+const concurrency = argv.concurrency as number | undefined;
+const ignoreChange = (argv.ignoreChange as boolean) || true;
 
-const regCliOptions: [string, any][] = Object.entries(rest).slice(1, -1); // yargs extra keys
-
-runVrt({ cwd, output, teamcity, options: regCliOptions });
+runVrt({
+    cwd,
+    output,
+    teamcity,
+    options: {
+        matchingThreshold,
+        thresholdRate,
+        thresholdPixel,
+        enableAntialias,
+        additionalDetection,
+        concurrency,
+        ignoreChange,
+    },
+});

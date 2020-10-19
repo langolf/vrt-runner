@@ -1,11 +1,11 @@
-type VRTResultsEntries = {
-    failedItems: string[];
-    passedItems: string[];
-    newItems: string[];
-    deletedItems: string[];
-};
+import fs from 'fs';
+import type { DiffResult } from './compare';
 
-export default function generateReportTemplate(data: VRTResultsEntries) {
+export default function generateReport(reportFile: string, vrtResult: DiffResult) {
+    fs.writeFileSync(reportFile, html(vrtResult));
+}
+
+function html(vrtResult: DiffResult) {
     return `
         <!doctype html>
         <html lang="en">
@@ -19,7 +19,7 @@ export default function generateReportTemplate(data: VRTResultsEntries) {
         <body class="page-comparison">
             <div class="vrt-wrapper">
                 ${navigation()}
-                ${main(data)}
+                ${main(vrtResult)}
             </div>
             <script src="./js/comparison.js" async></script>
         </body>
@@ -42,7 +42,7 @@ function navigation() {
     `;
 }
 
-function main({ newItems, deletedItems, failedItems, passedItems }: VRTResultsEntries) {
+function main({ newItems, deletedItems, failedItems, passedItems }: DiffResult) {
     return `
         <div class="vrt-main">
             <div class="suite vrt">
