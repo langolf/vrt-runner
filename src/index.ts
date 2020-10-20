@@ -5,18 +5,18 @@ import fs from 'fs-extra';
 import mkdirp from 'mkdirp';
 
 const showResults = ({
-    failed,
-    passed,
+    failedItems,
+    passedItems,
     diffTime,
 }: {
-    failed: number;
-    passed: number;
+    failedItems: number;
+    passedItems: number;
     diffTime: number;
 }) => {
     const results = `
     ==================
-    Tests failed: ${failed}
-    Tests passed: ${passed}
+    Tests failed: ${failedItems}
+    Tests passed: ${passedItems}
     Diff time: ${diffTime} s.
     `;
 
@@ -27,8 +27,8 @@ type onVrtCompleteType = (result: DiffResult, cmpTime: number) => void;
 
 const onVrtCompleteDefaultAction: onVrtCompleteType = (result, cmpTime) => {
     const info = showResults({
-        failed: result.failed.length + result.missing.length,
-        passed: result.passed.length + result.new.length,
+        failedItems: result.failedItems.length + result.deletedItems.length,
+        passedItems: result.passedItems.length + result.newItems.length,
         diffTime: cmpTime / 1000,
     });
 
@@ -46,7 +46,7 @@ export default async function runVrt({
     output: string;
     cwd: string;
     onVrtComplete?: onVrtCompleteType;
-    options?: ComparisonOptionsType;
+    options: ComparisonOptionsType;
 }) {
     const reportFile = path.resolve(output, 'index.html');
 
@@ -75,6 +75,7 @@ export default async function runVrt({
         console.info(`Comparing images...`);
         let cmpTime = Date.now();
         const result = await diffDirs({
+            output,
             dirs,
             teamcity,
             options,

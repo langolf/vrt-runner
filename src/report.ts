@@ -1,5 +1,5 @@
 import fs from 'fs';
-import type { DiffResult } from 'compare';
+import type { DiffResult } from './compare';
 
 export default function generateReport(reportFile: string, vrtResult: DiffResult) {
     fs.writeFileSync(reportFile, html(vrtResult));
@@ -42,14 +42,14 @@ function navigation() {
     `;
 }
 
-function main({ new: new_, missing, failed, passed }: DiffResult) {
+function main({ newItems, deletedItems, failedItems, passedItems }: DiffResult) {
     return `
         <div class="vrt-main">
             <div class="suite vrt">
-                    ${sectionNew(new_)}
-                    ${sectionMissing(missing)}
-                    ${sectionFailed(failed)}
-                    ${sectionPassed(passed)}
+                    ${sectionNew(newItems)}
+                    ${sectionMissing(deletedItems)}
+                    ${sectionFailed(failedItems)}
+                    ${sectionPassed(passedItems)}
                 <div class="vrt-divider"></div>
             </div>
         </div>
