@@ -31,6 +31,7 @@
     "typescript": "^3.9.2"
   },
   "scripts": {
+    "start": "HELLO",
     "lint": "npm run tsc:lint && eslint . --cache --quiet --ext .js,.jsx,.ts,.tsx",
     "build": "rm -rf build && mkdir -p build && cp -R src/report-assets build && ./node_modules/.bin/tsc",
     "styles": "npx node-sass --no-source-map ./src/report-assets/css/vrt.scss ./src/report-assets/css/vrt.css --output-style compressed",
