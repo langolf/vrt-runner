@@ -1,26 +1,24 @@
 {
-    "compilerOptions": {
-        "skipLibCheck": true,
-        "alwaysStrict": true,
-        "declaration": true,
-        "baseUrl": "./src",
-        "esModuleInterop": true,
-        "jsx": "react",
-        "module": "CommonJS",
-        "moduleResolution": "node",
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "outDir": "./build/",
-        "incremental": true,
-        "strict": true,
-        "strictNullChecks": true,
-        "target": "ES2015",
-        "lib": ["ESNext"]
-    },
-    "include": ["./src/**/*"],
-    "exclude": ["node_modules"]
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "alwaysStrict": true,
+    "declaration": true,
+    "baseUrl": "./src",
+    "esModuleInterop": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "outDir": "./build/",
+    "incremental": true,
+    "sourceMap": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "target": "ES2015",
+    "lib": ["ESNext"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }
