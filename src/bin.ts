@@ -1,32 +1,33 @@
 #!/usr/bin/env node
 
-import { argv } from 'yargs';
+import yargs from 'yargs';
 import path from 'path';
 import runVrt from './index';
 
-const cwd = (argv.cwd as string) || process.cwd();
-const output = (argv.output as string) || path.resolve(cwd, 'result');
-const teamcity = !!argv.teamcity;
-// higher then 0.05 will cause a fail
-const matchingThreshold = (argv.matchingThreshold as number) || 0.05;
-const thresholdRate = argv.thresholdRate as number | undefined;
-const thresholdPixel = argv.thresholdPixel as number | undefined;
-const enableAntialias = (argv.enableAntialias as boolean) || true;
-const additionalDetection = argv.additionalDetection as boolean | undefined;
-const concurrency = argv.concurrency as number | undefined;
-const ignoreChange = (argv.ignoreChange as boolean) || true;
+const { cwd, output, teamcity, _, $0, ...options } = yargs(process.argv.slice(2))
+    .options({
+        cwd: { type: 'string', demandOption: true, default: process.cwd() },
+        output: {
+            type: 'string',
+            demandOption: true,
+            default: path.resolve(process.cwd(), 'output'),
+        },
+        teamcity: { type: 'string', default: false },
+        // higher then 0.05 will cause a fail
+        matchingThreshold: { type: 'number', default: 0.05 },
+        thresholdRate: { type: 'number' },
+        thresholdPixel: { type: 'number' },
+        enableAntialias: { type: 'boolean', default: true },
+        additionalDetection: { type: 'boolean' },
+        concurrency: { type: 'number' },
+        ignoreChange: { type: 'boolean', default: true },
+    })
+    .strict()
+    .parserConfiguration({ 'camel-case-expansion': false }).argv;
 
 runVrt({
     cwd,
     output,
     teamcity,
-    options: {
-        matchingThreshold,
-        thresholdRate,
-        thresholdPixel,
-        enableAntialias,
-        additionalDetection,
-        concurrency,
-        ignoreChange,
-    },
+    options,
 });

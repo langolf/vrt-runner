@@ -50,6 +50,7 @@ async function diffDirs({ output, dirs, teamcity, options }: diffDirsType) {
         [dirs.test, dirs.baseline, dirs.diff, `--json=${vrtCommandReportFile}`, ...flags],
         {
             stdout: process.stdout,
+            preferLocal: true,
         }
     );
 
