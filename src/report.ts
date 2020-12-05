@@ -42,14 +42,14 @@ function navigation() {
     `;
 }
 
-function main({ newItems, deletedItems, failedItems, passedItems }: DiffResult) {
+function main({ new: new_, missing, failed, passed }: DiffResult) {
     return `
         <div class="vrt-main">
             <div class="suite vrt">
-                    ${sectionNew(newItems)}
-                    ${sectionMissing(deletedItems)}
-                    ${sectionFailed(failedItems)}
-                    ${sectionPassed(passedItems)}
+                    ${sectionNew(new_)}
+                    ${sectionMissing(missing)}
+                    ${sectionFailed(failed)}
+                    ${sectionPassed(passed)}
                 <div class="vrt-divider"></div>
             </div>
         </div>
