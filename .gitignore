@@ -1,4 +1,4 @@
-.vscode/
+!.vscode/
 .eslintcache
 yarn-error.log
 build/

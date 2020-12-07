@@ -1,29 +1,164 @@
 import fs from 'fs';
 import path from 'path';
-import execa from 'execa';
+import { PNG } from 'pngjs';
+import pixelmatch from 'pixelmatch';
 
-export type ComparisonOptionsType = {
-    matchingThreshold?: number;
-    thresholdRate?: number;
-    thresholdPixel?: number;
-    enableAntialias?: boolean;
-    additionalDetection?: boolean;
-    concurrency?: number;
-    ignoreChange?: boolean;
+type RGBTuple = [number, number, number];
+
+export interface ComparisonOptionsType {
+    threshold?: number;
+    includeAA?: boolean;
+    alpha?: number;
+    aaColor?: RGBTuple;
+    diffColor?: RGBTuple;
+    diffColorAlt?: RGBTuple;
+    diffMask?: boolean;
+    [x: string]: unknown;
+}
+
+const prepareOptions = (options?: ComparisonOptionsType): undefined | ComparisonOptionsType => {
+    const optionKeys = options ? Object.keys(options) : [];
+
+    if (optionKeys.length === 0) {
+        return undefined;
+    }
+
+    if (options) {
+        optionKeys.forEach((key) => {
+            const propertyName = key as keyof ComparisonOptionsType;
+
+            if (options && options[propertyName] === undefined) {
+                delete options[propertyName];
+            }
+        });
+    }
+
+    // default value for threshold
+    if (options && options.threshold === undefined) {
+        options.threshold = 0.1;
+    }
+
+    return options;
 };
 
+function arrayUnique<T>(array: T[]): T[] {
+    const a = array.concat();
+
+    for (let i = 0; i < a.length; ++i) {
+        for (let j = i + 1; j < a.length; ++j) {
+            if (a[i] === a[j]) a.splice(j--, 1);
+        }
+    }
+
+    return a;
+}
+
+type FilePair = {
+    baseline?: string;
+    test?: string;
+};
+
+function filePairs(dirs: DirsType): FilePair[] {
+    const baselineFiles = fs.readdirSync(dirs.baseline);
+    const testFiles = fs.readdirSync(dirs.test);
+    const uniqueFiles = arrayUnique(baselineFiles.concat(testFiles));
+
+    return uniqueFiles
+        .filter((fileName) => {
+            const ext = path.extname(fileName);
+            return ext === '.png' || ext === '.jpg';
+        })
+        .map((fileName) => {
+            const baseline = path.join(dirs.baseline, fileName);
+            const test = path.join(dirs.test, fileName);
+
+            const testTemp = path.join(dirs.test, `Spec${fileName}`);
+
+            if (fs.existsSync(testTemp) && !fs.existsSync(test)) {
+                fs.copyFileSync(testTemp, test);
+            }
+
+            const baselineExists = fs.existsSync(baseline);
+            const testExists = fs.existsSync(test);
+
+            return {
+                baseline: baselineExists ? baseline : undefined,
+                test: testExists ? test : undefined,
+            };
+        })
+        .filter(Boolean);
+}
+
+async function diffPair(
+    { baseline: baselinePath, test: testPath }: FilePair,
+    toDir: string,
+    options?: ComparisonOptionsType
+): Promise<number> {
+    if (!baselinePath || !testPath) {
+        console.error(`Baseline or test missing ${baselinePath} ${testPath}`);
+        return Promise.reject();
+    }
+
+    try {
+        const { baseline, test } = getEqualSizedImages(baselinePath, testPath);
+        const { width, height } = baseline;
+        const diff = new PNG({ width, height });
+
+        const numDiffPixels = pixelmatch(
+            baseline.data,
+            test.data,
+            diff.data,
+            width,
+            height,
+            prepareOptions(options)
+        );
+
+        const diffFile = path.join(toDir, path.basename(baselinePath));
+        fs.writeFileSync(diffFile, PNG.sync.write(diff));
+
+        return numDiffPixels;
+    } catch (error) {
+        console.error(`Error diffing file ${baselinePath}: ${error.stack || error.toString()}`);
+        return -1;
+    }
+}
+
+function getEqualSizedImages(baselinePath: string, testPath: string) {
+    const baseline = PNG.sync.read(fs.readFileSync(baselinePath));
+    const test = PNG.sync.read(fs.readFileSync(testPath));
+
+    // Same sized images, return
+    if (baseline.width === test.width && baseline.height === test.height) {
+        return { baseline, test };
+    }
+
+    // They are different sizes, find the smallest dimension that will fix and crop both
+    const finalWidth = Math.min(baseline.width, test.width);
+    const finalHeight = Math.min(baseline.height, test.height);
+
+    const newBaseline = new PNG({ width: finalWidth, height: finalHeight });
+    const newTest = new PNG({ width: finalWidth, height: finalHeight });
+
+    new PNG(baseline).bitblt(newBaseline, 0, 0, finalWidth, finalHeight, 0, 0);
+    new PNG(test).bitblt(newBaseline, 0, 0, finalWidth, finalHeight, 0, 0);
+
+    return {
+        baseline: newBaseline,
+        test: newTest,
+    };
+}
+
 export type DiffResult = {
-    failedItems: string[];
-    passedItems: string[];
-    newItems: string[];
-    deletedItems: string[];
+    failed: string[];
+    passed: string[];
+    new: string[];
+    missing: string[];
 };
 
 type diffDirsType = {
-    output: string;
     dirs: DirsType;
     teamcity: boolean;
-    options: ComparisonOptionsType;
+    options?: ComparisonOptionsType;
 };
 // For every .png or .jpg file in baseline directory:
 // - will try to find file with the same name in test directory
@@ -31,11 +166,15 @@ type diffDirsType = {
 // options.baseline {String} - baseline directory
 // options.test {String} - test directory
 // options.diff {String} - diff directory
-async function diffDirs({ output, dirs, teamcity, options }: diffDirsType) {
-    const vrtCommandReportFile = path.relative(
-        process.cwd(),
-        path.resolve(output, 'diff-report.json')
-    );
+async function diffDirs({ dirs, teamcity, options }: diffDirsType) {
+    const pairs = filePairs(dirs);
+
+    const result: DiffResult = {
+        failed: [],
+        passed: [],
+        new: [],
+        missing: [],
+    };
 
     function teamcityMessage(message: string) {
         if (teamcity) {
@@ -43,36 +182,38 @@ async function diffDirs({ output, dirs, teamcity, options }: diffDirsType) {
         }
     }
 
-    const flags = Object.entries(options).map(([key, value]) => `--${key}=${value}`);
-
-    execa.sync(
-        'reg-cli',
-        [dirs.test, dirs.baseline, dirs.diff, `--json=${vrtCommandReportFile}`, ...flags],
-        {
-            stdout: process.stdout,
-            preferLocal: true,
-        }
-    );
-
     teamcityMessage(`testSuiteStarted name='VRT'`);
 
-    const result: DiffResult = JSON.parse(fs.readFileSync(vrtCommandReportFile, 'utf8'));
+    for (const pair of pairs) {
+        const fileName =
+            typeof pair.baseline !== 'undefined'
+                ? path.relative(dirs.baseline, pair.baseline)
+                : path.relative(dirs.test, pair.test!);
 
-    if (result.failedItems.length > 0) {
-        for (const file of result.failedItems) {
+        teamcityMessage(`testStarted name='${fileName}'`);
+
+        if (typeof pair.baseline === 'undefined') {
+            result.new.push(fileName);
+        } else if (typeof pair.test === 'undefined') {
             teamcityMessage(
-                `testFailed name='${file}' message='sandbox screenshots are different' details=''`
+                `testFailed name='${fileName}' message='sandbox screenshots are missing' details=''`
             );
+            result.missing.push(fileName);
+        } else {
+            const numDiffPixels = await diffPair(pair, dirs.diff, options);
+
+            if (numDiffPixels > 0) {
+                teamcityMessage(
+                    `testFailed name='${fileName}' message='sandbox screenshots are different' details=''`
+                );
+                result.failed.push(fileName);
+            } else {
+                result.passed.push(fileName);
+            }
         }
+        teamcityMessage(`testFinished name='${fileName}'`);
     }
 
-    if (result.deletedItems.length > 0) {
-        for (const file of result.deletedItems) {
-            teamcityMessage(
-                `testFailed name='${file}' message='sandbox screenshots are missing' details=''`
-            );
-        }
-    }
     teamcityMessage(`testSuiteFinished name='VRT'`);
 
     return result;

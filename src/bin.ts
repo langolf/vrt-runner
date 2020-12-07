@@ -4,30 +4,66 @@ import yargs from 'yargs';
 import path from 'path';
 import runVrt from './index';
 
-const { cwd, output, teamcity, _, $0, ...options } = yargs(process.argv.slice(2))
+const {
+    cwd,
+    output,
+    teamcity,
+    threshold,
+    includeAA,
+    alpha,
+    aaColor,
+    diffColor,
+    diffColorAlt,
+    diffMask,
+} = yargs(process.argv.slice(2))
     .options({
-        cwd: { type: 'string', demandOption: true, default: process.cwd() },
-        output: {
+        cwd: {
+            alias: 'c',
             type: 'string',
             demandOption: true,
-            default: path.resolve(process.cwd(), 'output'),
+            default: process.cwd(),
+            normalize: true,
+        },
+        output: {
+            alias: 'o',
+            type: 'string',
+            demandOption: true,
+            default: path.resolve(process.cwd(), 'result'),
+            normalize: true,
         },
         teamcity: { type: 'string', default: false },
-        // higher then 0.05 will cause a fail
-        matchingThreshold: { type: 'number', default: 0.05 },
-        thresholdRate: { type: 'number' },
-        thresholdPixel: { type: 'number' },
-        enableAntialias: { type: 'boolean', default: true },
-        additionalDetection: { type: 'boolean' },
-        concurrency: { type: 'number' },
-        ignoreChange: { type: 'boolean', default: true },
+
+        // Pixelmatch optios
+        threshold: { type: 'number', default: 0.1 },
+        includeAA: { type: 'boolean', default: false },
+        alpha: { type: 'number' },
+        aaColor: { type: 'string' },
+        diffColor: { type: 'string' },
+        diffColorAlt: { type: 'string' },
+        diffMask: { type: 'boolean' },
     })
-    .strict()
-    .parserConfiguration({ 'camel-case-expansion': false }).argv;
+    .coerce(['aaColor', 'diffColor', 'diffColorAlt'], (value: string) => {
+        const rgb = value
+            .replace(/[[\]]/g, '')
+            .split(',')
+            .map((value) => parseInt(value))
+            .filter((value) => !isNaN(value));
+
+        if (rgb.length !== 3) {
+            console.log(
+                `warning: color ${value} is not matching scheme of [number, number, number]. It won't be used in options`
+            );
+
+            return undefined;
+        }
+
+        return rgb as [number, number, number];
+    })
+    .strict().argv;
 
 runVrt({
     cwd,
     output,
     teamcity,
-    options,
+    options: { threshold, includeAA, alpha, aaColor, diffColor, diffColorAlt, diffMask },
 });
