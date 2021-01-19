@@ -23,8 +23,18 @@ path_to_diff_images
 ### Change options via CLI, e.g. comparison diff threshold
 
 ```bash
-    npx @magiclab/vrt-runner --cwd path_to_diff_images --output result_output --threshold=0.25
+    npx @magiclab/vrt-runner --cwd path_to_diff_images --output result_output --matchingThreshold 0.25
 ```
+
+| Variable Name           | Description                                                                                                                                                                                                    |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ignoreChange`        | If `true`, error will not be thrown when image change detected. Default `true`                                                                                                                                 |
+| `--matchingThreshold`   | Matching threshold, ranges from 0 to 1. Smaller values make the comparison more sensitive. `0.05` by default. `0` by default for reg-cli.                                                                      |
+| `--thresholdRate`       | Rate threshold for detecting change. When the difference ratio of the image is larger than the set rate detects the change. Applied after matchingThreshold.                                                   |
+| `--thresholdPixel`      | Pixel threshold for detecting change. When the difference pixel of the image is larger than the set pixel detects the change. This value takes precedence over thresholdRate. Applied after matchingThreshold. |
+| `--concurrency`         | How many processes launches in parallel. If omitted 4                                                                                                                                                          |
+| `--enableAntialias`     | Enable antialias. If omitted `true`                                                                                                                                                                            |
+| `--additionalDetection` | Enable additional difference detection(highly experimental). Select "none" or "client" (default: `none`).                                                                                                      |
 
 ## Node
 
@@ -37,7 +47,7 @@ runVrt({
     cwd,
     output,
     teamcity, // boolean flag to know if we should log teamcity friendly output
-    options, // optional: parameters for pixelmatch
+    options, // optional: parameters for reg-cli
 });
 ```
 
@@ -54,8 +64,8 @@ One of the ways to use this data is the following:
         // define action
         const onVrtCompleteAction: onVrtCompleteType = (result, cmpTime) => {
             const info = showResults({
-                failed: result.failed.length + result.missing.length,
-                passed: result.passed.length + result.new.length,
+                failedItems: result.failedItems.length + result.deletedItems.length,
+                passed: result.passedItems.length + result.newItems.length,
                 diffTime: cmpTime / 1000,
             });
 
@@ -77,7 +87,7 @@ One of the ways to use this data is the following:
 })();
 ```
 
-## How to change optons for `pixelmatch` instance
+## How to change options for `reg-cli` instance
 
 You might want to change the different comparison options in instances of `vrt-runner`. You can do it via `options`, which are are aligned with [pixelmatch API](https://github.com/mapbox/pixelmatch)
 
@@ -85,7 +95,7 @@ You might want to change the different comparison options in instances of `vrt-r
 
 ```js
     const options = {
-        threshold:0.2
+        matchingThreshold: 0.2
     };
 
     const vrtIntance01 = runVrt({
@@ -96,7 +106,7 @@ You might want to change the different comparison options in instances of `vrt-r
     });
 
     const optionsSecondType = {
-        threshold:0.2
+        matchingThreshold: 0.2
     };
 
     const vrtIntance03 = runVrt({

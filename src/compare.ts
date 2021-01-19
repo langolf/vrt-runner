@@ -3,10 +3,9 @@ import path from 'path';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 
-// based on pixelMatch options
 type RGBTuple = [number, number, number];
 
-export type ComparisonOptionsType = {
+export interface ComparisonOptionsType {
     threshold?: number;
     includeAA?: boolean;
     alpha?: number;
@@ -14,7 +13,8 @@ export type ComparisonOptionsType = {
     diffColor?: RGBTuple;
     diffColorAlt?: RGBTuple;
     diffMask?: boolean;
-};
+    [x: string]: unknown;
+}
 
 const prepareOptions = (options?: ComparisonOptionsType): undefined | ComparisonOptionsType => {
     const optionKeys = options ? Object.keys(options) : [];

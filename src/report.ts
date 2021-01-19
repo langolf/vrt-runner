@@ -1,5 +1,5 @@
 import fs from 'fs';
-import type { DiffResult } from 'compare';
+import type { DiffResult } from './compare';
 
 export default function generateReport(reportFile: string, vrtResult: DiffResult) {
     fs.writeFileSync(reportFile, html(vrtResult));
