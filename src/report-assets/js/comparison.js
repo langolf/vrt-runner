@@ -39,7 +39,28 @@ function refreshVisualisation(action, trigger) {
     }
 }
 
+function imagesLoad() {
+    const imageArr = document.querySelectorAll('img.lazy');
+
+    const imageObserver = new IntersectionObserver(function (entries, obs) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                const image = entry.target;
+                image.src = image.dataset.src;
+                image.classList.remove('lazy');
+                obs.unobserve(entry.target);
+            }
+        });
+    });
+
+    imageArr.forEach((element) => {
+        imageObserver.observe(element);
+    });
+}
+
 function start() {
+    imagesLoad();
+
     const toggleCollapsed = document.querySelectorAll('.js-toggle-collapsed');
     const toggleVisualisation = document.querySelectorAll('.js-toggle-visualisation');
     const controlRange = document.querySelectorAll('.js-control-range');
@@ -66,7 +87,6 @@ function start() {
                 if (this.checked) {
                     image.src = image.getAttribute('data-src');
                 } else {
-                    image.setAttribute('data-src', image.src);
                     image.src = '';
                 }
             }

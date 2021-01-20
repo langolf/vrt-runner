@@ -80,7 +80,7 @@ function newItem(itemName: string) {
             </div>
             <div class="vrt-test__screenshots">
                 <a class="screenshot" href="#">
-                    <img src="./test/${itemName}" />
+                    ${imageElement(`./test/${itemName}`)}
                 </a>
             </div>
         </div>
@@ -111,7 +111,7 @@ function missingItem(itemName: string) {
             </div>
             <div class="vrt-test__screenshots">
                 <a class="screenshot" href="#">
-                    <img src="./baseline/${itemName}" />
+                    ${imageElement(`./baseline/${itemName}`)}
                 </a>
             </div>
         </div>
@@ -148,13 +148,13 @@ function failedItem(itemName: string) {
                     ${partialControls()}
                 </div>
                 <a class="screenshot baseline" href="#">
-                    <img src="./baseline/${itemName}" />
+                    ${imageElement(`./baseline/${itemName}`)}
                 </a>
                 <a class="screenshot delta" href="#">
-                    <img src="./diff/${itemName}" />
+                    ${imageElement(`./diff/${itemName}`)}
                 </a>
                 <a class="screenshot current" href="#">
-                    <img src="./test/${itemName}" />
+                    ${imageElement(`./test/${itemName}`)}
                 </a>
             </div>
         </div>
@@ -185,13 +185,19 @@ function itemPassed(itemName: string) {
             </div>
             <div class="vrt-test__screenshots">
                 <a class="screenshot baseline" href="#">
-                    <img data-src="./baseline/${itemName}" />
+                    ${imageElement(`./baseline/${itemName}`)}
                 </a>
                 <a class="screenshot current" href="#">
-                    <img data-src="./test/${itemName}" />
+                    ${imageElement(`./test/${itemName}`)}
                 </a>
             </div>
         </div>
+    `;
+}
+
+function imageElement(src: string) {
+    return `
+        <img data-src="${src}" class="lazy" loading="lazy" alt="" />
     `;
 }
 
