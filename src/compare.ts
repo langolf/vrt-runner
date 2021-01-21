@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
+import log from './log';
 
 type RGBTuple = [number, number, number];
 
@@ -14,6 +15,20 @@ export interface ComparisonOptionsType {
     diffColorAlt?: RGBTuple;
     diffMask?: boolean;
     [x: string]: unknown;
+}
+
+export interface DiffResult {
+    failed: string[];
+    passed: string[];
+    new: string[];
+    missing: string[];
+}
+
+export interface DirsType {
+    baselineDir: string;
+    testDir: string;
+    diffDir: string;
+    outputDir: string;
 }
 
 const prepareOptions = (options?: ComparisonOptionsType): undefined | ComparisonOptionsType => {
@@ -59,8 +74,8 @@ type FilePair = {
 };
 
 function filePairs(dirs: DirsType): FilePair[] {
-    const baselineFiles = fs.readdirSync(dirs.baseline);
-    const testFiles = fs.readdirSync(dirs.test);
+    const baselineFiles = fs.readdirSync(dirs.baselineDir);
+    const testFiles = fs.readdirSync(dirs.testDir);
     const uniqueFiles = arrayUnique(baselineFiles.concat(testFiles));
 
     return uniqueFiles
@@ -69,10 +84,10 @@ function filePairs(dirs: DirsType): FilePair[] {
             return ext === '.png' || ext === '.jpg';
         })
         .map((fileName) => {
-            const baseline = path.join(dirs.baseline, fileName);
-            const test = path.join(dirs.test, fileName);
+            const baseline = path.join(dirs.baselineDir, fileName);
+            const test = path.join(dirs.testDir, fileName);
 
-            const testTemp = path.join(dirs.test, `Spec${fileName}`);
+            const testTemp = path.join(dirs.testDir, `Spec${fileName}`);
 
             if (fs.existsSync(testTemp) && !fs.existsSync(test)) {
                 fs.copyFileSync(testTemp, test);
@@ -148,13 +163,6 @@ function getEqualSizedImages(baselinePath: string, testPath: string) {
     };
 }
 
-export type DiffResult = {
-    failed: string[];
-    passed: string[];
-    new: string[];
-    missing: string[];
-};
-
 type diffDirsType = {
     dirs: DirsType;
     teamcity: boolean;
@@ -166,7 +174,7 @@ type diffDirsType = {
 // options.baseline {String} - baseline directory
 // options.test {String} - test directory
 // options.diff {String} - diff directory
-async function diffDirs({ dirs, teamcity, options }: diffDirsType) {
+const diffDirs = async ({ dirs, teamcity, options }: diffDirsType) => {
     const pairs = filePairs(dirs);
 
     const result: DiffResult = {
@@ -187,8 +195,8 @@ async function diffDirs({ dirs, teamcity, options }: diffDirsType) {
     for (const pair of pairs) {
         const fileName =
             typeof pair.baseline !== 'undefined'
-                ? path.relative(dirs.baseline, pair.baseline)
-                : path.relative(dirs.test, pair.test!);
+                ? path.relative(dirs.baselineDir, pair.baseline)
+                : path.relative(dirs.testDir, pair.test!);
 
         teamcityMessage(`testStarted name='${fileName}'`);
 
@@ -200,7 +208,7 @@ async function diffDirs({ dirs, teamcity, options }: diffDirsType) {
             );
             result.missing.push(fileName);
         } else {
-            const numDiffPixels = await diffPair(pair, dirs.diff, options);
+            const numDiffPixels = await diffPair(pair, dirs.diffDir, options);
 
             if (numDiffPixels > 0) {
                 teamcityMessage(
@@ -212,17 +220,14 @@ async function diffDirs({ dirs, teamcity, options }: diffDirsType) {
             }
         }
         teamcityMessage(`testFinished name='${fileName}'`);
+        if (process.env.NODE_ENV === 'debug') {
+            log.warn(`testFinished name='${fileName}'`);
+        }
     }
 
     teamcityMessage(`testSuiteFinished name='VRT'`);
 
     return result;
-}
+};
 
 export default diffDirs;
-
-export type DirsType = {
-    baseline: string;
-    test: string;
-    diff: string;
-};

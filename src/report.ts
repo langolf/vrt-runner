@@ -1,8 +1,28 @@
-import fs from 'fs';
-import type { DiffResult } from './compare';
+import fs from 'fs-extra';
+import path from 'path';
+import type { DiffResult, DirsType } from './compare';
+import log from './log';
+const IS_DEBUG = process.env.NODE_ENV === 'debug';
 
-export default function generateReport(reportFile: string, vrtResult: DiffResult) {
-    fs.writeFileSync(reportFile, html(vrtResult));
+export default async function generateReport(params: DiffResult & DirsType) {
+    try {
+        fs.copySync(path.resolve(__dirname, 'report-assets'), path.resolve(params.outputDir));
+        fs.writeFileSync(path.join(params.outputDir, 'report.json'), JSON.stringify(params));
+
+        log.info(`Report JSON file created`);
+        if (IS_DEBUG) {
+            log.warn(`${path.join(params.outputDir, 'report.json')}\n `);
+            log.info(`${JSON.stringify(params, null, ' ')}`);
+        }
+
+        await fs.writeFile(path.join(params.outputDir, 'index.html'), html(params));
+
+        log.info(`Report html file created`);
+        IS_DEBUG && log.warn(`${path.join(params.outputDir, 'index.html')}`);
+    } catch (error) {
+        console.error(`Couldn't create report json: \n${error.stack || error}`);
+        process.exit(1);
+    }
 }
 
 function html(vrtResult: DiffResult) {
