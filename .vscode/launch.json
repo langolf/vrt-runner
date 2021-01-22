@@ -6,6 +6,9 @@
       "request": "launch",
       "name": "Run with custom options",
       "cwd": "${workspaceFolder}",
+      "env": {
+        "NODE_ENV": "debug"
+      },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
       "args": [
         "src/bin.ts",
