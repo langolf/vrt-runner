@@ -283,9 +283,11 @@ body {
         &.failed .vrt-section__title {
             color: $vrt-colour-failed;
         }
+
         &.new .vrt-section__title {
             color: $vrt-colour-new;
         }
+
         &.passed .vrt-section__title {
             color: $vrt-colour-passed;
         }
@@ -368,9 +370,11 @@ body {
         &.failed .switcher__toggle {
             color: $vrt-colour-failed;
         }
+
         &.new .switcher__toggle {
             color: $vrt-colour-new;
         }
+
         &.passed .switcher__toggle {
             color: $vrt-colour-passed;
         }
@@ -402,9 +406,11 @@ body {
         &.failed .vrt-test__label {
             background-color: $vrt-colour-failed;
         }
+
         &.new .vrt-test__label {
             background-color: $vrt-colour-new;
         }
+
         &.passed .vrt-test__label {
             background-color: $vrt-colour-passed;
         }
@@ -517,9 +523,11 @@ body {
             &.baseline::after {
                 content: 'baseline';
             }
+
             &.delta::after {
                 content: 'delta';
             }
+
             &.current::after {
                 content: 'current';
             }

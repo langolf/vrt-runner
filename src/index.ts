@@ -1,38 +1,17 @@
 import path from 'path';
 import diffDirs, { DirsType, DiffResult, ComparisonOptionsType } from './compare';
-import generateReport from './report';
+import createReport from './report';
 import fs from 'fs-extra';
-import mkdirp from 'mkdirp';
+import log from './log';
 
-const showResults = ({
-    failed,
-    passed,
-    diffTime,
-}: {
-    failed: number;
-    passed: number;
-    diffTime: number;
-}) => {
-    const results = `
-    ==================
-    Tests failed: ${failed}
-    Tests passed: ${passed}
-    Diff time: ${diffTime} s.
-    `;
-
-    return results;
-};
+const IS_DEBUG = process.env.NODE_ENV === 'debug';
 
 type onVrtCompleteType = (result: DiffResult, cmpTime: number) => void;
 
 const onVrtCompleteDefaultAction: onVrtCompleteType = (result, cmpTime) => {
-    const info = showResults({
-        failed: result.failed.length + result.missing.length,
-        passed: result.passed.length + result.new.length,
-        diffTime: cmpTime / 1000,
-    });
-
-    console.info(info);
+    log.fail(`\nTests failed: ${result.failed.length}`);
+    log.success(`Tests passed: ${result.passed.length} \n `);
+    log.info(`Diff time: ${cmpTime / 1000}s`);
 };
 
 export default async function runVrt({
@@ -47,32 +26,28 @@ export default async function runVrt({
     cwd: string;
     onVrtComplete?: onVrtCompleteType;
     options?: ComparisonOptionsType;
-}) {
-    const reportFile = path.resolve(output, 'index.html');
-
+}): Promise<never> {
     const dirs: DirsType = {
-        baseline: path.resolve(output, 'baseline'),
-        test: path.resolve(output, 'test'),
-        diff: path.resolve(output, 'diff'),
+        baselineDir: path.resolve(output, 'baseline'),
+        testDir: path.resolve(output, 'test'),
+        diffDir: path.resolve(output, 'diff'),
+        outputDir: path.resolve(output),
     };
 
-    // Ensure test dirs exists
-    mkdirp.sync(dirs.baseline);
-    mkdirp.sync(dirs.test);
-    mkdirp.sync(dirs.diff);
-
-    // Copy files to result first
-    fs.copySync(path.resolve(__dirname, 'report-assets'), path.resolve(output));
+    // Folder checking are subject to move to our core vrt package
+    // as it has knowledge of structure
+    fs.emptyDirSync(output);
+    fs.ensureDirSync(dirs.baselineDir);
+    fs.ensureDirSync(dirs.testDir);
+    fs.ensureDirSync(dirs.diffDir);
 
     if (output !== cwd) {
-        fs.copySync(path.resolve(cwd, 'baseline'), dirs.baseline);
-        fs.copySync(path.resolve(cwd, 'test'), dirs.test);
+        fs.copySync(path.resolve(cwd, 'baseline'), dirs.baselineDir);
+        fs.copySync(path.resolve(cwd, 'test'), dirs.testDir);
     }
 
-    // Collect images from baseline and testing paths
     try {
-        // Compare
-        console.info(`Comparing images...`);
+        IS_DEBUG && log.info(`\nComparing images...\n`);
         let cmpTime = Date.now();
         const result = await diffDirs({
             dirs,
@@ -87,8 +62,8 @@ export default async function runVrt({
             onVrtCompleteDefaultAction(result, cmpTime);
         }
 
-        generateReport(reportFile, result);
-        console.info('Report generated to', reportFile);
+        await createReport({ ...result, ...dirs });
+        IS_DEBUG && console.info(`Finished.`);
         process.exit(0);
     } catch (error) {
         console.error(`Comparing images error: \n${error.stack || error}`);
