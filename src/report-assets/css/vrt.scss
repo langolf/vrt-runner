@@ -1,15 +1,13 @@
 @charset "UTF-8";
 
-
 ///////////////////////////// GLOBAL HELPERS //////////////////////////////
 @mixin clearfix {
     &:after {
-        content:"";
-        display:table;
-        clear:both;
+        content: '';
+        display: table;
+        clear: both;
     }
 }
-
 
 ///////////////////////////// VARIABLES //////////////////////////////
 
@@ -18,7 +16,6 @@ $vrt-sidemenu-width: 300px;
 $vrt-colour-failed: #ff4200;
 $vrt-colour-new: #00c2f0;
 $vrt-colour-passed: #40b800;
-
 
 ///////////////////////////// GLOBAL //////////////////////////////
 
@@ -37,11 +34,10 @@ body {
     min-height: 100%;
     margin: 0 auto;
     padding: 0;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
     color: #888888;
     background: #fff;
 }
-
 
 ///////////////////////////// COMMON //////////////////////////////
 
@@ -85,15 +81,13 @@ body {
         line-height: 40px;
         font-weight: bold;
         background: #fff;
-        content: "~";
+        content: '~';
     }
 }
-
 
 ///////////////////////////// INDEX PAGE //////////////////////////////
 
 .page-index {
-
     text-align: center;
 
     .vrt-logo {
@@ -178,14 +172,11 @@ body {
             color: inherit;
         }
     }
-
 }
-
 
 ///////////////////////////// COMPARISON PAGE //////////////////////////////
 
 .page-comparison {
-
     .vrt-wrapper {
         position: relative;
     }
@@ -209,7 +200,6 @@ body {
     // navigation
 
     .vrt-navigation {
-
         ul {
             list-style: none;
             padding: 0 20px;
@@ -239,11 +229,16 @@ body {
                 border-left-width: 10px;
             }
         }
-        .failed a { color: $vrt-colour-failed; }
-        .new a { color: $vrt-colour-new; }
-        .passed a { color: $vrt-colour-passed; }
+        .failed a {
+            color: $vrt-colour-failed;
+        }
+        .new a {
+            color: $vrt-colour-new;
+        }
+        .passed a {
+            color: $vrt-colour-passed;
+        }
     }
-
 
     // page content
 
@@ -283,12 +278,19 @@ body {
             line-height: 30px;
             text-transform: uppercase;
             border-bottom: 3px solid currentColor;
-
         }
 
-        &.failed .vrt-section__title { color: $vrt-colour-failed;}
-        &.new .vrt-section__title { color: $vrt-colour-new;}
-        &.passed .vrt-section__title { color: $vrt-colour-passed;}
+        &.failed .vrt-section__title {
+            color: $vrt-colour-failed;
+        }
+
+        &.new .vrt-section__title {
+            color: $vrt-colour-new;
+        }
+
+        &.passed .vrt-section__title {
+            color: $vrt-colour-passed;
+        }
 
         .vrt-section__actions {
             position: absolute;
@@ -331,7 +333,7 @@ body {
                 height: $switcher-height;
                 background: #ccc;
                 border-radius: floor($switcher-height / 2);
-                transition: background .2s;
+                transition: background 0.2s;
 
                 &::before {
                     position: absolute;
@@ -342,7 +344,7 @@ body {
                     background: #fff;
                     border-radius: 50%;
                     transform: translate3d(0, 0, 0);
-                    transition: transform .2s;
+                    transition: transform 0.2s;
                     content: '';
                 }
 
@@ -363,12 +365,19 @@ body {
             .switcher__input:checked + .switcher__toggle::before {
                 transform: translate3d(($switcher-width - $switcher-height), 0, 0);
             }
-
         }
 
-        &.failed .switcher__toggle { color: $vrt-colour-failed; }
-        &.new .switcher__toggle { color: $vrt-colour-new; }
-        &.passed .switcher__toggle { color: $vrt-colour-passed; }
+        &.failed .switcher__toggle {
+            color: $vrt-colour-failed;
+        }
+
+        &.new .switcher__toggle {
+            color: $vrt-colour-new;
+        }
+
+        &.passed .switcher__toggle {
+            color: $vrt-colour-passed;
+        }
 
         // test result / group of images
 
@@ -394,9 +403,17 @@ body {
             vertical-align: top;
         }
 
-        &.failed .vrt-test__label { background-color: $vrt-colour-failed; }
-        &.new .vrt-test__label { background-color: $vrt-colour-new; }
-        &.passed .vrt-test__label { background-color: $vrt-colour-passed; }
+        &.failed .vrt-test__label {
+            background-color: $vrt-colour-failed;
+        }
+
+        &.new .vrt-test__label {
+            background-color: $vrt-colour-new;
+        }
+
+        &.passed .vrt-test__label {
+            background-color: $vrt-colour-passed;
+        }
 
         .vrt-test__visualisation {
             display: inline-block;
@@ -412,7 +429,6 @@ body {
                 margin: 0 0 0 5px;
                 color: #666;
             }
-
         }
 
         // screenshots
@@ -432,7 +448,7 @@ body {
             width: 100%;
             z-index: 99;
 
-            input[type=range]{
+            input[type='range'] {
                 width: 100%;
                 margin: 0;
                 padding: 0;
@@ -458,7 +474,7 @@ body {
                     width: $slider-size;
                     margin-top: floor(-($slider-size - $track-height) / 2);
                     border-radius: 50%;
-                    background: #286CC6;
+                    background: #286cc6;
                 }
 
                 &:focus {
@@ -468,7 +484,6 @@ body {
                     }
                 }
             }
-
         }
 
         .screenshot {
@@ -480,7 +495,7 @@ body {
             max-width: (320px + 4px);
             height: auto;
             overflow: hidden;
-            outline: 1px solid #EAEAEA;
+            outline: 1px solid #eaeaea;
             border: 2px solid transparent;
             cursor: alias;
             opacity: 1;
@@ -502,25 +517,25 @@ body {
                 font-size: 10px;
                 line-height: 1.2em;
                 color: #999;
-                background: rgba(228,228,228, 0.63);
+                background: rgba(228, 228, 228, 0.63);
             }
 
             &.baseline::after {
-                content: "baseline";
+                content: 'baseline';
             }
+
             &.delta::after {
-                content: "delta";
+                content: 'delta';
             }
+
             &.current::after {
-                content: "current";
+                content: 'current';
             }
         }
-
 
         // layered visualization
 
         .multilayer {
-
             .vrt-test__screenshots {
                 display: inline-block;
             }
@@ -583,7 +598,5 @@ body {
                 display: none;
             }
         }
-
     }
-
 }
