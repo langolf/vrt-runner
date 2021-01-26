@@ -10,7 +10,6 @@ const createOptions = () => {
         output,
         teamcity,
         threshold,
-        verbose,
         includeAA,
         alpha,
         aaColor,
@@ -33,7 +32,6 @@ const createOptions = () => {
             normalize: true,
         })
         .option('teamcity', { alias: 't', type: 'string', default: false })
-        .option('verbose', { type: 'boolean', default: false })
         // Pixelmatch optios
         .option('threshold', { type: 'number', default: 0.1 })
         .option('includeAA', { type: 'boolean', default: false })
@@ -65,7 +63,6 @@ const createOptions = () => {
         cwd,
         output,
         teamcity,
-        verbose,
         threshold,
         includeAA,
         alpha,

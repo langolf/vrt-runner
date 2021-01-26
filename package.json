@@ -38,7 +38,7 @@
     "build": "rm -rf build && mkdir -p build && cp -R src/report-assets build && ./node_modules/.bin/tsc",
     "styles": "npx node-sass --no-source-map ./src/report-assets/css/vrt.scss ./src/report-assets/css/vrt.css --output-style compressed",
     "tsc:lint": "tsc --incremental --noEmit false",
-    "test": "ts-node -T src/bin.ts --in test/1 --out tmp/result -v",
+    "test": "NODE_ENV=debug ts-node -T src/bin.ts --in test/1 --out tmp/result -v",
     "prepublish": "npm run build"
   },
   "dependencies": {

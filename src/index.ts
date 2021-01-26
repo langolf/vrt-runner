@@ -4,10 +4,12 @@ import createReport from './report';
 import fs from 'fs-extra';
 import log from './log';
 
+const IS_DEBUG = process.env.NODE_ENV === 'debug';
+
 type onVrtCompleteType = (result: DiffResult, cmpTime: number) => void;
 
 const onVrtCompleteDefaultAction: onVrtCompleteType = (result, cmpTime) => {
-    log.fail(`Tests failed: ${result.failed.length}`);
+    log.fail(`\nTests failed: ${result.failed.length}`);
     log.success(`Tests passed: ${result.passed.length} \n `);
     log.info(`Diff time: ${cmpTime / 1000}s`);
 };
@@ -18,14 +20,12 @@ export default async function runVrt({
     cwd,
     onVrtComplete,
     options,
-    verbose,
 }: {
     teamcity: boolean;
     output: string;
     cwd: string;
     onVrtComplete?: onVrtCompleteType;
     options?: ComparisonOptionsType;
-    verbose?: boolean;
 }): Promise<never> {
     const dirs: DirsType = {
         baselineDir: path.resolve(output, 'baseline'),
@@ -47,7 +47,7 @@ export default async function runVrt({
     }
 
     try {
-        verbose && log.info(`Comparing images...`);
+        IS_DEBUG && log.info(`\nComparing images...\n`);
         let cmpTime = Date.now();
         const result = await diffDirs({
             dirs,
@@ -63,7 +63,7 @@ export default async function runVrt({
         }
 
         await createReport({ ...result, ...dirs });
-        verbose && console.info(`Finished.`);
+        IS_DEBUG && console.info(`Finished.`);
         process.exit(0);
     } catch (error) {
         console.error(`Comparing images error: \n${error.stack || error}`);

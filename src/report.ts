@@ -14,7 +14,7 @@ export default async function generateReport(params: DiffResult & DirsType) {
 
         await fs.writeFile(path.join(params.outputDir, 'index.html'), html(params));
 
-        log.info(`Report html file created`);
+        log.info(`\n Report html file created`);
         log.warn(`${path.join(params.outputDir, 'index.html')}`);
     } catch (error) {
         console.error(`Couldn't create report json: \n${error.stack || error}`);

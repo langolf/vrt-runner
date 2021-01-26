@@ -174,7 +174,7 @@ type diffDirsType = {
 // options.baseline {String} - baseline directory
 // options.test {String} - test directory
 // options.diff {String} - diff directory
-const diffDirs = async ({ dirs, teamcity, options }: diffDirsType) => {
+async function diffDirs({ dirs, teamcity, options }: diffDirsType) {
     const pairs = filePairs(dirs);
 
     const result: DiffResult = {
@@ -228,6 +228,6 @@ const diffDirs = async ({ dirs, teamcity, options }: diffDirsType) => {
     teamcityMessage(`testSuiteFinished name='VRT'`);
 
     return result;
-};
+}
 
 export default diffDirs;
