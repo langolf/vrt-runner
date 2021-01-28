@@ -36,7 +36,6 @@ export default async function runVrt({
 
     // Folder checking are subject to move to our core vrt package
     // as it has knowledge of structure
-    fs.emptyDirSync(output);
     fs.ensureDirSync(dirs.baselineDir);
     fs.ensureDirSync(dirs.testDir);
     fs.ensureDirSync(dirs.diffDir);
