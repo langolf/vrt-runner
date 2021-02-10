@@ -1,8 +1,10 @@
 import path from 'path';
-import diffDirs, { DirsType, DiffResult, ComparisonOptionsType } from './compare';
+import { DirsType, DiffResult } from './types';
+import { diffDirs } from './compare';
 import createReport from './report';
 import fs from 'fs-extra';
 import log from './log';
+import { PixelmatchOptions } from 'pixelmatch';
 
 const IS_DEBUG = process.env.NODE_ENV === 'debug';
 
@@ -25,8 +27,8 @@ export default async function runVrt({
     output: string;
     cwd: string;
     onVrtComplete?: onVrtCompleteType;
-    options?: ComparisonOptionsType;
-}): Promise<never> {
+    options?: PixelmatchOptions;
+}): Promise<DiffResult> {
     const dirs: DirsType = {
         baselineDir: path.resolve(output, 'baseline'),
         testDir: path.resolve(output, 'test'),
