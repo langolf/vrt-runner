@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import type { DiffResult, DirsType } from './compare';
+import { DiffResult, DirsType } from './types';
 import log from './log';
 
 export default async function generateReport(params: DiffResult & DirsType) {
@@ -96,7 +96,7 @@ function newItem(itemName: string) {
                 <kbd class="vrt-test__label">${itemName}</kbd>
             </div>
             <div class="vrt-test__screenshots">
-                <a class="screenshot" href="#">
+                <a class="screenshot" target="_blank" href="test/${itemName}">
                     ${imageElement(`./test/${itemName}`)}
                 </a>
             </div>
@@ -127,7 +127,7 @@ function missingItem(itemName: string) {
                 <kbd class="vrt-test__label">${itemName}</kbd>
             </div>
             <div class="vrt-test__screenshots">
-                <a class="screenshot" href="#">
+                <a class="screenshot" target="_blank" href="baseline/${itemName}">
                     ${imageElement(`./baseline/${itemName}`)}
                 </a>
             </div>
@@ -164,13 +164,13 @@ function failedItem(itemName: string) {
                 <div class="vrt-test__controls">
                     ${partialControls()}
                 </div>
-                <a class="screenshot baseline" href="#">
+                <a class="screenshot baseline" target="_blank" href="baseline/${itemName}">
                     ${imageElement(`./baseline/${itemName}`)}
                 </a>
-                <a class="screenshot delta" href="#">
+                <a class="screenshot delta" target="_blank" href="diff/${itemName}">
                     ${imageElement(`./diff/${itemName}`)}
                 </a>
-                <a class="screenshot current" href="#">
+                <a class="screenshot current" target="_blank" href="test/${itemName}">
                     ${imageElement(`./test/${itemName}`)}
                 </a>
             </div>
@@ -201,10 +201,10 @@ function itemPassed(itemName: string) {
                 <kbd class="vrt-test__label">${itemName}</kbd>
             </div>
             <div class="vrt-test__screenshots">
-                <a class="screenshot baseline" href="#">
+                <a class="screenshot baseline" target="_blank" href="baseline/${itemName}">
                     ${imageElement(`./baseline/${itemName}`)}
                 </a>
-                <a class="screenshot current" href="#">
+                <a class="screenshot current" target="_blank" href="test/${itemName}">
                     ${imageElement(`./test/${itemName}`)}
                 </a>
             </div>
